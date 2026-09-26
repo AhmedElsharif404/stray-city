@@ -12,9 +12,9 @@
     "dev:web": "pnpm --filter @stray-city/web dev",
     "dev:server": "pnpm --filter @stray-city/server dev",
     "build": "pnpm -r --if-present build",
-    "typecheck": "pnpm -r --if-present typecheck",
+    "typecheck": "pnpm --filter @stray-city/shared build && pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
-    "lint": "pnpm -r --if-present lint",
+    "lint": "pnpm --filter @stray-city/shared build && pnpm -r --if-present lint",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
