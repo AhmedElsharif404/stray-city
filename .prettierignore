@@ -1,0 +1,6 @@
+node_modules
+dist
+coverage
+packages/shared/src/database.types.ts
+supabase/migrations
+pnpm-lock.yaml
