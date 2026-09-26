@@ -1,6 +1,5 @@
 import {
   Award,
-  Compass,
   Map,
   Menu,
   MessageCircleHeart,
@@ -31,17 +30,22 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen bg-cream text-ink">
       <header className="sticky top-0 z-[1000] border-b border-ink/10 bg-cream/95 backdrop-blur">
-        <div className="mx-auto flex h-[72px] max-w-[1600px] items-center gap-6 px-4 sm:px-6">
+        <div className="mx-auto flex h-20 max-w-[1600px] items-center gap-6 px-4 sm:px-6">
           <NavLink
             to="/"
             className="group flex shrink-0 items-center gap-3"
             aria-label="Stray City home"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-coral text-cream transition-transform group-hover:-rotate-6">
-              <Compass size={21} strokeWidth={2.4} />
+            <span className="brand-logo-crop transition-transform group-hover:-rotate-3">
+              <img src="/city-stray-logo.png" alt="" className="brand-logo-image" />
             </span>
-            <span className="font-display text-[1.55rem] font-bold tracking-[-0.04em]">
-              Stray City
+            <span className="hidden sm:block">
+              <span className="block font-display text-[1.55rem] font-bold leading-none tracking-[-0.04em]">
+                Stray City
+              </span>
+              <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.18em] text-mint">
+                Find your own way
+              </span>
             </span>
           </NavLink>
 

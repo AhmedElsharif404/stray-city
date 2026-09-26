@@ -5,20 +5,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: '#F7F5EF',
-        ink: '#162A2B',
-        coral: '#F06A4D',
-        blue: '#3267C8',
-        mint: '#6CC9A5',
-        gold: '#E7AC3A',
-        violet: '#7465B2',
+        cream: '#F8F8F5',
+        ink: '#172B46',
+        coral: '#EE7B5C',
+        blue: '#2F6575',
+        mint: '#55989C',
+        gold: '#E9A066',
+        violet: '#3D6077',
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],
         display: ['Fraunces', 'Georgia', 'serif'],
       },
       boxShadow: {
-        card: '0 18px 50px rgba(22, 42, 43, 0.10)',
+        card: '0 18px 50px rgba(23, 43, 70, 0.12)',
       },
     },
   },
