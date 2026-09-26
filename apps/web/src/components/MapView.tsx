@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { Crosshair, KeyRound } from 'lucide-react';
+import { Crosshair } from 'lucide-react';
 import { useEffect } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 
@@ -58,12 +58,18 @@ export function MapView({ places, selectedId, userLocation, onSelect }: MapViewP
         zoom={11}
         minZoom={10}
         className="h-full min-h-[430px] w-full"
-        zoomControl={false}
+        zoomControl
       >
-        {mapKey && (
+        {mapKey ? (
           <TileLayer
             attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; OpenStreetMap contributors'
             url={`https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${mapKey}`}
+          />
+        ) : (
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            maxZoom={19}
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
         )}
         {places.map((place) => (
@@ -79,19 +85,6 @@ export function MapView({ places, selectedId, userLocation, onSelect }: MapViewP
         )}
         <MapSync place={selected} userLocation={userLocation} />
       </MapContainer>
-      {!mapKey && (
-        <div className="pointer-events-none absolute left-4 top-4 z-[500] max-w-xs rounded-2xl border border-ink/10 bg-cream/95 p-3 shadow-card backdrop-blur">
-          <div className="flex gap-2">
-            <KeyRound className="mt-0.5 shrink-0 text-coral" size={17} />
-            <div>
-              <p className="text-sm font-bold">Map tiles paused</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-ink/60">
-                Add a Stadia Maps key to render tiles. Pins and the synced list still work.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
       <div className="pointer-events-none absolute bottom-4 left-4 z-[500] flex items-center gap-2 rounded-full bg-cream/90 px-3 py-2 text-xs font-bold shadow-card">
         <Crosshair size={14} className="text-blue" /> {places.length} discoveries in view
       </div>

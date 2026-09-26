@@ -7,7 +7,7 @@ The repository is a TypeScript monorepo with a React/Vite frontend, a small Expr
 ## What is implemented
 
 - Synced Leaflet map and card list with borough, neighborhood, category, date, verified-budget, text, and vibe filters.
-- Stadia Maps tiles when a key is present; a functional no-tile map fallback when it is not. Raw OpenStreetMap tile servers are never used.
+- A real street basemap with OpenStreetMap tiles for ordinary interactive use, upgraded to Stadia Maps styling when a key is present.
 - Near Me, Now & Near, category pins with icon-and-text labels, place details, favorites, and shareable canvas-generated Stray Cards.
 - Restaurants, cafés, cheap eats, inspection metadata, and audited staff-only price verification.
 - Geolocation-gated Echo unlocks, reactions, reports, owner soft-delete, and a separate public scrapbook.
@@ -36,7 +36,7 @@ The browser talks directly to Supabase for product reads and writes. The Express
 - Node.js 20 or newer
 - pnpm 11 (Corepack is the easiest installation path)
 - A Supabase project, or the Supabase CLI plus a local container runtime for local backend work
-- A Stadia Maps API key for rendered map tiles
+- Optional: a Stadia Maps API key for a managed production basemap and custom styling
 - Optional: Ticketmaster Discovery API key and NYC Open Data app token for ETL
 
 ## Install and run the sample app
@@ -47,7 +47,7 @@ pnpm install --frozen-lockfile
 pnpm dev:web
 ```
 
-Open `http://localhost:5173`. If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are absent, the app uses only visibly labeled sample data. All major screens and non-sensitive interactions remain reviewable. Without a Stadia key, the map retains pins, selection, and the synced list over a neutral grid and explains why tiles are paused.
+Open `http://localhost:5173`. If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are absent, the app uses only visibly labeled sample data. All major screens and non-sensitive interactions remain reviewable. The map uses the standard OpenStreetMap basemap by default and automatically switches to Stadia Maps when a key is configured.
 
 To run both frontend and ETL server:
 
@@ -83,7 +83,7 @@ The signup trigger creates `public.users` from Auth metadata. Echo and trail pro
 | -------------------------- | ------------- | ------------------------------------------------------- |
 | `VITE_SUPABASE_URL`        | For real data | Supabase project URL.                                   |
 | `VITE_SUPABASE_ANON_KEY`   | For real data | Public anon key; access is constrained by RLS.          |
-| `VITE_STADIA_MAPS_API_KEY` | For map tiles | Stadia Maps key used by Leaflet.                        |
+| `VITE_STADIA_MAPS_API_KEY` | Optional      | Stadia Maps key used for managed production tiles.      |
 | `VITE_SERVER_URL`          | For admin ETL | Express server origin, such as `http://localhost:8787`. |
 
 ### Server — `apps/server/.env`
