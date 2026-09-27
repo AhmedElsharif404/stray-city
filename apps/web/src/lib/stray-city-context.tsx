@@ -223,10 +223,27 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
     let active = true;
 
     const load = async () => {
+      const loadAllPlaces = async () => {
+        const pageSize = 1000;
+        const rows: Record<string, unknown>[] = [];
+        for (let from = 0; ; from += pageSize) {
+          const { data, error } = await client
+            .from('places')
+            .select('*')
+            .eq('is_active', true)
+            .order('name')
+            .range(from, from + pageSize - 1);
+          if (error) return { data: null, error };
+          rows.push(...((data ?? []) as Record<string, unknown>[]));
+          if (!data || data.length < pageSize) break;
+        }
+        return { data: rows, error: null };
+      };
+
       const [{ data: authData }, { data: placeRows, error }, { data: trailRows }] =
         await Promise.all([
           client.auth.getUser(),
-          client.from('places').select('*').eq('is_active', true).order('name'),
+          loadAllPlaces(),
           client
             .from('trails')
             .select('*, trail_places(place_id, position, clue, objective)')

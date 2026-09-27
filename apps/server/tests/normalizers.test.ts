@@ -48,12 +48,34 @@ describe('ETL normalizers', () => {
       score: '7',
     });
     expect(place).toMatchObject({
+      category: 'cafe',
       cuisine: 'Coffee/Tea',
       inspection_grade: 'A',
       inspection_score: 7,
       cost_verified: false,
       hidden_gem_verified: false,
     });
+  });
+
+  it('classifies bakeries and bars from official establishment data', () => {
+    const bakery = normalizeRestaurant({
+      camis: '5002',
+      dba: 'Neighborhood Bake Shop',
+      boro: 'Brooklyn',
+      latitude: '40.68',
+      longitude: '-73.97',
+      cuisine_description: 'Bakery Products/Desserts',
+    });
+    const bar = normalizeRestaurant({
+      camis: '5003',
+      dba: 'West Side Tavern',
+      boro: 'Manhattan',
+      latitude: '40.76',
+      longitude: '-73.99',
+      cuisine_description: 'American',
+    });
+    expect(bakery?.category).toBe('bakery');
+    expect(bar?.category).toBe('bar');
   });
 
   it('normalizes Ticketmaster events as map places', () => {

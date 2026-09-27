@@ -188,11 +188,20 @@ export function normalizeRestaurant(record: UnknownRecord): NormalizedPlaceInput
     return null;
 
   const cuisine = text(record.cuisine_description);
+  const classification = `${name} ${cuisine ?? ''}`.toLowerCase();
+  const category: PlaceCategory =
+    /coffee|café|cafe|tea|espresso|juice|smoothie/.test(classification)
+      ? 'cafe'
+      : /bakery|bake shop|pastry|dessert|donut|doughnut/.test(classification)
+        ? 'bakery'
+        : /\bbar\b|tavern|pub\b|brewery|cocktail|taproom|ale house|lounge/.test(classification)
+          ? 'bar'
+          : 'restaurant';
   const normalized = basePlace(
     record,
     'nyc_restaurant_inspection',
     externalId,
-    'restaurant',
+    category,
     name,
     lat,
     lng,
@@ -203,10 +212,12 @@ export function normalizeRestaurant(record: UnknownRecord): NormalizedPlaceInput
     record.street,
     record.zipcode ? `NY ${String(record.zipcode)}` : null,
   ]);
-  normalized.description = cuisine ? `${cuisine} restaurant.` : 'New York City restaurant.';
+  normalized.description = cuisine
+    ? `${cuisine} ${category === 'restaurant' ? 'restaurant' : category}.`
+    : `New York City ${category}.`;
   normalized.cuisine = cuisine;
   normalized.phone = text(record.phone);
-  normalized.tags = ['food', ...(cuisine ? [cuisine.toLowerCase()] : [])];
+  normalized.tags = ['food', category, ...(cuisine ? [cuisine.toLowerCase()] : [])];
   normalized.inspection_grade = text(record.grade);
   normalized.inspection_score = number(record.score);
   normalized.inspection_date = text(record.inspection_date)?.slice(0, 10) ?? null;

@@ -2,7 +2,6 @@ import { normalizedPlaceInputSchema, type NormalizedPlaceInput } from '@stray-ci
 
 import { requireSupabaseAdmin } from '../lib/supabase.js';
 import { fetchCatalog } from './catalog.js';
-import { findInspectionMatch, type MatchCandidate } from './matching.js';
 import { fetchParks, fetchRestaurants, fetchTicketmasterEvents } from './sources.js';
 
 export type EtlSource = 'nyc_parks' | 'nyc_restaurant_inspection' | 'ticketmaster' | 'osm_catalog';
@@ -31,7 +30,7 @@ interface Counts {
 }
 
 async function upsertCatalogPlaces(
-  source: Exclude<EtlSource, 'nyc_restaurant_inspection'>,
+  source: EtlSource,
   places: NormalizedPlaceInput[],
 ): Promise<Counts> {
   const supabase = requireSupabaseAdmin();
@@ -79,52 +78,6 @@ async function upsertCatalogPlaces(
   return { created, updated, skipped: 0 };
 }
 
-async function enrichInspections(inspections: NormalizedPlaceInput[]): Promise<Counts> {
-  const supabase = requireSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('places')
-    .select('id, name, address, lat, lng')
-    .in('category', ['restaurant', 'cafe', 'bakery'])
-    .eq('is_active', true)
-    .limit(50_000);
-  if (error) throw error;
-  const candidates = (data ?? []) as MatchCandidate[];
-  let updated = 0;
-  let skipped = 0;
-
-  for (const inspection of inspections) {
-    const match = findInspectionMatch(inspection, candidates);
-    if (!match) {
-      skipped += 1;
-      continue;
-    }
-    const { error: updateError } = await supabase
-      .from('places')
-      .update({
-        inspection_grade: inspection.inspection_grade,
-        inspection_score: inspection.inspection_score,
-        inspection_date: inspection.inspection_date,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', match.id);
-    if (updateError) throw updateError;
-    const { error: sourceError } = await supabase.from('place_sources').upsert(
-      {
-        place_id: match.id,
-        provider: 'nyc_restaurant_inspection',
-        external_id: inspection.external_id,
-        source_url: inspection.source_url,
-        raw_payload: inspection.source_payload,
-        last_synced_at: new Date().toISOString(),
-      },
-      { onConflict: 'provider,external_id' },
-    );
-    if (sourceError) throw sourceError;
-    updated += 1;
-  }
-  return { created: 0, updated, skipped };
-}
-
 async function archiveExpiredEvents(): Promise<void> {
   const { error } = await requireSupabaseAdmin()
     .from('places')
@@ -166,10 +119,7 @@ export async function runEtl(source: EtlSource, limit = 500): Promise<EtlResult>
         });
     }
 
-    const counts =
-      source === 'nyc_restaurant_inspection'
-        ? await enrichInspections(valid)
-        : await upsertCatalogPlaces(source, valid);
+    const counts = await upsertCatalogPlaces(source, valid);
     if (source === 'ticketmaster') await archiveExpiredEvents();
 
     if (rejected.length) {
