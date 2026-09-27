@@ -13,6 +13,7 @@ import {
   Share2,
   ShieldCheck,
   Sparkles,
+  Star,
   Trash2,
   Upload,
   X,
@@ -23,6 +24,7 @@ import type { Place } from '@stray-city/shared';
 
 import { getBrowserLocation } from '../lib/geo';
 import { categoryMeta, placePhoto, placeSummary, timeAgo } from '../lib/format';
+import { sampleReviewsForPlace } from '../lib/sample-reviews';
 import { useStrayCity } from '../lib/stray-city-context';
 import { SampleBadge } from './SampleBadge';
 import { StrayCardDialog } from './StrayCardDialog';
@@ -46,7 +48,7 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
     reportContent,
     sendStray,
   } = useStrayCity();
-  const [tab, setTab] = useState<'about' | 'echoes' | 'scrapbook'>('about');
+  const [tab, setTab] = useState<'about' | 'reviews' | 'echoes' | 'scrapbook'>('about');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [shareOpen, setShareOpen] = useState(false);
@@ -59,6 +61,7 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
     () => scrapbook.filter((item) => item.placeId === place.id),
     [scrapbook, place.id],
   );
+  const sampleReviews = useMemo(() => sampleReviewsForPlace(place), [place]);
   const unlocked = unlockedPlaces.has(place.id);
   const meta = categoryMeta[place.category];
 
@@ -173,7 +176,7 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
         {error && <div className="mt-3 rounded-xl bg-coral/10 p-3 text-sm text-coral">{error}</div>}
 
         <div className="mt-6 flex border-b border-ink/10">
-          {(['about', 'echoes', 'scrapbook'] as const).map((value) => (
+          {(['about', 'reviews', 'echoes', 'scrapbook'] as const).map((value) => (
             <button
               key={value}
               className={`panel-tab ${tab === value ? 'panel-tab-active' : ''}`}
@@ -181,6 +184,8 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
             >
               {value === 'about'
                 ? 'About'
+                : value === 'reviews'
+                  ? `Reviews · ${sampleReviews.length}`
                 : value === 'echoes'
                   ? `Echoes · ${placeEchoes.length}`
                   : `Scrapbook · ${placeScrapbook.length}`}
@@ -253,6 +258,51 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
                 </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {tab === 'reviews' && (
+          <div className="space-y-4 pt-5">
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-blue/15 bg-blue/5 p-4">
+              <div>
+                <p className="font-bold">Community preview</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink/55">
+                  Fictional demo profiles and sample reviews for preview purposes.
+                </p>
+              </div>
+              <SampleBadge />
+            </div>
+
+            {sampleReviews.map((review) => (
+              <article key={review.id} className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <span
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-bold text-white"
+                    style={{ background: `linear-gradient(135deg, ${review.accent}, #18275C)` }}
+                    aria-hidden="true"
+                  >
+                    {review.initials}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-bold leading-tight">{review.displayName}</p>
+                        <p className="mt-0.5 text-xs text-ink/45">@{review.username}</p>
+                      </div>
+                      <div className="flex items-center gap-0.5 text-coral" aria-label={`${review.rating} out of 5 stars`}>
+                        {Array.from({ length: 5 }, (_, star) => (
+                          <Star key={star} size={13} fill={star < review.rating ? 'currentColor' : 'none'} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed text-ink/75">{review.text}</p>
+                    <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-ink/40">
+                      {review.visitNote} · Sample account
+                    </p>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         )}
 
