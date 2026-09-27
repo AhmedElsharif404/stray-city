@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import { Crosshair, KeyRound } from 'lucide-react';
-import { useEffect } from 'react';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { useEffect, useState } from 'react';
+import { MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 
 import type { Place } from '@stray-city/shared';
 
@@ -19,9 +19,9 @@ function createPlaceIcon(place: Place, selected: boolean) {
   const meta = categoryMeta[place.category];
   return L.divIcon({
     className: 'custom-marker-shell',
-    html: `<div class="map-pin ${selected ? 'map-pin-selected' : ''}" style="--pin:${meta.color}"><span>${meta.icon}</span><b>${meta.label}</b></div>`,
-    iconSize: [112, 42],
-    iconAnchor: [20, 40],
+    html: `<div class="map-pin ${selected ? 'map-pin-selected' : ''}" style="--pin:${meta.color}"><span>${meta.icon}</span></div>`,
+    iconSize: [34, 40],
+    iconAnchor: [17, 38],
   });
 }
 
@@ -47,6 +47,41 @@ function MapSync({
   return null;
 }
 
+function PlaceMarkers({
+  places,
+  selectedId,
+  onSelect,
+}: Pick<MapViewProps, 'places' | 'selectedId' | 'onSelect'>) {
+  const map = useMapEvents({
+    zoomend: () => setZoom(map.getZoom()),
+  });
+  const [zoom, setZoom] = useState(map.getZoom());
+  const showNames = zoom >= 16;
+
+  return places.map((place) => {
+    const selected = place.id === selectedId;
+    return (
+      <Marker
+        key={place.id}
+        position={[place.lat, place.lng]}
+        icon={createPlaceIcon(place, selected)}
+        eventHandlers={{ click: () => onSelect(place) }}
+        zIndexOffset={selected ? 1000 : 0}
+      >
+        <Tooltip
+          className="place-name-tooltip"
+          direction="top"
+          offset={[0, -30]}
+          opacity={1}
+          permanent={showNames || selected}
+        >
+          {place.name}
+        </Tooltip>
+      </Marker>
+    );
+  });
+}
+
 export function MapView({ places, selectedId, userLocation, onSelect }: MapViewProps) {
   const selected = places.find((place) => place.id === selectedId);
   const mapTilerKey = import.meta.env.VITE_MAPTILER_KEY?.trim();
@@ -55,8 +90,8 @@ export function MapView({ places, selectedId, userLocation, onSelect }: MapViewP
   return (
     <div className="relative h-full min-h-[430px] overflow-hidden rounded-[28px] border border-ink/10 bg-[#d9e3dc] shadow-card">
       <MapContainer
-        center={[40.731, -73.957]}
-        zoom={11}
+        center={[40.758, -73.9855]}
+        zoom={15}
         minZoom={10}
         className="h-full min-h-[430px] w-full"
         zoomControl
@@ -73,14 +108,7 @@ export function MapView({ places, selectedId, userLocation, onSelect }: MapViewP
             url={`https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${stadiaKey}`}
           />
         ) : null}
-        {places.map((place) => (
-          <Marker
-            key={place.id}
-            position={[place.lat, place.lng]}
-            icon={createPlaceIcon(place, place.id === selectedId)}
-            eventHandlers={{ click: () => onSelect(place) }}
-          />
-        ))}
+        <PlaceMarkers places={places} selectedId={selectedId} onSelect={onSelect} />
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={locationIcon} />
         )}

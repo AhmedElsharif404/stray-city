@@ -252,6 +252,16 @@ select:focus-visible {
   transform-origin: bottom left;
   transition: transform 0.2s;
 }
+.map-pin {
+  justify-content: center;
+  width: 34px;
+  padding: 3px;
+  border-radius: 50% 50% 50% 10px;
+  transform: rotate(-45deg);
+}
+.map-pin span {
+  transform: rotate(45deg);
+}
 .map-pin span,
 .location-pin span {
   display: grid;
@@ -271,7 +281,6 @@ select:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.map-pin::after,
 .location-pin::after {
   content: '';
   position: absolute;
@@ -285,8 +294,23 @@ select:focus-visible {
   border-bottom: 2px solid #fff;
 }
 .map-pin-selected {
-  transform: scale(1.15) translateY(-2px);
+  transform: rotate(-45deg) scale(1.2) translate(2px, -2px);
   z-index: 10;
+}
+.place-name-tooltip {
+  padding: 6px 9px;
+  border: 1px solid rgba(23, 43, 70, 0.12);
+  border-radius: 9px;
+  background: rgba(255, 253, 248, 0.96);
+  color: #172b46;
+  box-shadow: 0 5px 16px rgba(23, 43, 70, 0.16);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.place-name-tooltip::before {
+  border-top-color: rgba(255, 253, 248, 0.96);
 }
 .location-pin {
   --pin: #3267c8;
