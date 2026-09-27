@@ -32,15 +32,6 @@ const profiles = [
   { displayName: 'Theo Martin', username: 'theooutside', initials: 'TM', accent: '#3659C8', homeBorough: 'Brooklyn', joined: 'Summer 2024', bio: 'Parks, city trails, and low-key weekend adventures across all five boroughs.' },
 ];
 
-const profilePhotos = [
-  { url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=700&q=82', alt: 'Sunlight through trees on a city walk' },
-  { url: 'https://images.unsplash.com/photo-1522083165195-3424ed129620?auto=format&fit=crop&w=700&q=82', alt: 'New York architecture discovered nearby' },
-  { url: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=700&q=82', alt: 'Artwork inside a local gallery' },
-  { url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=700&q=82', alt: 'Coffee from a neighborhood café' },
-  { url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=700&q=82', alt: 'A scenic city discovery' },
-  { url: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=700&q=82', alt: 'Colorful local event lights' },
-];
-
 const recentPlaces = [
   'Riverside walk',
   'Neighborhood café',
@@ -91,6 +82,9 @@ export function sampleProfileDetails(username: string): SampleProfileDetails | n
       text: reviewLines[(seed + index * 3) % reviewLines.length]!,
       when: index === 0 ? '4 days ago' : index === 1 ? '2 weeks ago' : '1 month ago',
     })),
-    photos: Array.from({ length: 3 }, (_, index) => profilePhotos[(seed + index * 2) % profilePhotos.length]!),
+    photos: Array.from({ length: 3 }, (_, index) => ({
+      url: `https://picsum.photos/seed/${encodeURIComponent(`city-stray-${username}-${index}`)}/700/700`,
+      alt: `Sample photo ${index + 1} from ${profile.displayName}'s city walk`,
+    })),
   };
 }

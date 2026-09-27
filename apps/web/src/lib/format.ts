@@ -25,29 +25,10 @@ export const categoryMeta: Record<PlaceCategory, { label: string; color: string;
   music_venue: { label: 'Music Venue', color: '#2D438D', icon: '♫' },
 };
 
-const categoryFallbackPhotos: Partial<Record<PlaceCategory, string>> = {
-  park: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=82',
-  garden: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=82',
-  viewpoint: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=82',
-  restaurant: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=82',
-  cheap_eat: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=82',
-  cafe: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=82',
-  bakery: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=82',
-  museum: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1200&q=82',
-  gallery: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1200&q=82',
-  public_art: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1200&q=82',
-  landmark: 'https://images.unsplash.com/photo-1522083165195-3424ed129620?auto=format&fit=crop&w=1200&q=82',
-  attraction: 'https://images.unsplash.com/photo-1522083165195-3424ed129620?auto=format&fit=crop&w=1200&q=82',
-  theatre: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1200&q=82',
-  cinema: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1200&q=82',
-  music_venue: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1200&q=82',
-};
-
-const defaultFallbackPhoto =
-  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=82';
-
-export function placePhoto(place: Pick<Place, 'category' | 'photos'>): string {
-  return place.photos[0] ?? categoryFallbackPhotos[place.category] ?? defaultFallbackPhoto;
+export function placePhoto(place: Pick<Place, 'category' | 'id' | 'photos'>): string {
+  if (place.photos[0]) return place.photos[0];
+  const seed = encodeURIComponent(`stray-place-${place.category}-${place.id}`);
+  return `https://picsum.photos/seed/${seed}/1200/800`;
 }
 
 export function placeSummary(
