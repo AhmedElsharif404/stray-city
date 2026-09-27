@@ -121,7 +121,7 @@ export function RewardsPage() {
               type="checkbox"
               checked={currentProfile.publicLeaderboard}
               onChange={(event) => void setPublicLeaderboardOptIn(event.target.checked)}
-              className="h-5 w-5 accent-[#6CC9A5]"
+            className="h-5 w-5 accent-[#4B73F2]"
             />
           </label>
           <div className="mt-3 flex items-start gap-2 rounded-2xl bg-white/7 p-4 text-xs leading-relaxed text-cream/55">

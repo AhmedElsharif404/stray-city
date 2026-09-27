@@ -88,7 +88,7 @@ export function MapView({ places, selectedId, userLocation, onSelect }: MapViewP
   const stadiaKey = import.meta.env.VITE_STADIA_MAPS_API_KEY?.trim();
 
   return (
-    <div className="relative h-full min-h-[430px] overflow-hidden rounded-[28px] border border-ink/10 bg-[#d9e3dc] shadow-card">
+    <div className="relative h-full min-h-[430px] overflow-hidden rounded-[28px] border border-ink/10 bg-[#e8edff] shadow-card">
       <MapContainer
         center={[40.758, -73.9855]}
         zoom={15}

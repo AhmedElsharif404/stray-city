@@ -15,11 +15,11 @@ export function StrayCardDialog({ place, onClose }: { place: Place; onClose: () 
     const context = canvas.getContext('2d');
     if (!context) return;
     const meta = categoryMeta[place.category];
-    context.fillStyle = '#F7F5EF';
+    context.fillStyle = '#F8FAFF';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = meta.color;
     context.fillRect(0, 0, canvas.width, 34);
-    context.fillStyle = '#162A2B';
+    context.fillStyle = '#18275C';
     context.font = '700 42px Inter, sans-serif';
     context.fillText('STRAY CITY  ✦  FOUND HERE', 72, 110);
 
@@ -44,7 +44,7 @@ export function StrayCardDialog({ place, onClose }: { place: Place; onClose: () 
       context.fillStyle = meta.color;
       context.font = '700 32px Inter, sans-serif';
       context.fillText(`${meta.icon}  ${meta.label.toUpperCase()}`, 72, 900);
-      context.fillStyle = '#162A2B';
+      context.fillStyle = '#18275C';
       context.font = '700 76px Georgia, serif';
       const words = place.name.split(' ');
       let line = '';
@@ -61,11 +61,11 @@ export function StrayCardDialog({ place, onClose }: { place: Place; onClose: () 
       context.fillStyle = 'rgba(22,42,43,.62)';
       context.font = '500 30px Inter, sans-serif';
       context.fillText(`${place.neighborhood} · ${place.borough}`, 72, 1250);
-      context.fillStyle = '#F06A4D';
+      context.fillStyle = '#EF6658';
       context.beginPath();
       context.arc(957, 1218, 42, 0, Math.PI * 2);
       context.fill();
-      context.fillStyle = '#F7F5EF';
+      context.fillStyle = '#F8FAFF';
       context.font = '700 34px Inter, sans-serif';
       context.fillText('SC', 934, 1230);
       setImage(canvas.toDataURL('image/png'));
@@ -73,7 +73,7 @@ export function StrayCardDialog({ place, onClose }: { place: Place; onClose: () 
     imageElement.onerror = () => {
       context.fillStyle = meta.color;
       context.fillRect(72, 160, 936, 660);
-      context.fillStyle = '#F7F5EF';
+      context.fillStyle = '#F8FAFF';
       context.font = '700 160px Georgia, serif';
       context.fillText(meta.icon, 440, 550);
       setImage(canvas.toDataURL('image/png'));
