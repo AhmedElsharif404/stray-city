@@ -73,9 +73,29 @@ function number(value: unknown): number | null {
 }
 
 function categoryFrom(tags: UnknownRecord): PlaceCategory | null {
-  const candidates = [tags.amenity, tags.tourism, tags.leisure, tags.shop, tags.historic];
+  const taxonomy = object(tags.taxonomy);
+  const hierarchy = Array.isArray(taxonomy.hierarchy) ? taxonomy.hierarchy : [];
+  const candidates = [
+    tags.amenity,
+    tags.tourism,
+    tags.leisure,
+    tags.shop,
+    tags.historic,
+    tags.basic_category,
+    taxonomy.primary,
+    ...[...hierarchy].reverse(),
+  ];
   for (const candidate of candidates) {
-    const mapped = categoryMap[String(candidate ?? '').toLowerCase()];
+    const normalized = String(candidate ?? '').toLowerCase();
+    const mapped =
+      categoryMap[normalized] ??
+      (normalized.includes('restaurant') ? 'restaurant' : null) ??
+      (normalized.includes('cafe') || normalized.includes('coffee') ? 'cafe' : null) ??
+      (normalized.includes('museum') ? 'museum' : null) ??
+      (normalized.includes('gallery') ? 'gallery' : null) ??
+      (normalized.includes('theater') || normalized.includes('theatre') ? 'theatre' : null) ??
+      (normalized.includes('attraction') ? 'attraction' : null) ??
+      (normalized.includes('landmark') ? 'landmark' : null);
     if (mapped) return mapped;
   }
   return null;
@@ -83,14 +103,23 @@ function categoryFrom(tags: UnknownRecord): PlaceCategory | null {
 
 export function normalizeCatalogRecord(record: UnknownRecord): ProviderPlace | null {
   const properties = { ...object(record.tags), ...object(record.properties) };
+  const names = object(record.names ?? properties.names);
+  const addresses = Array.isArray(record.addresses ?? properties.addresses)
+    ? ((record.addresses ?? properties.addresses) as unknown[])
+    : [];
+  const primaryAddress = object(addresses[0]);
   const geometry = object(record.geometry);
   const coordinates = Array.isArray(geometry.coordinates) ? geometry.coordinates : [];
   const center = object(record.center);
   const latitude = number(record.lat ?? center.lat ?? coordinates[1]);
   const longitude = number(record.lon ?? record.lng ?? center.lon ?? coordinates[0]);
   const externalId = text(record.id ?? properties.id);
-  const name = text(properties.name ?? record.name);
-  const category = categoryFrom(properties);
+  const name = text(properties.name ?? record.name ?? names.primary);
+  const category = categoryFrom({
+    ...properties,
+    basic_category: record.basic_category ?? properties.basic_category,
+    taxonomy: record.taxonomy ?? properties.taxonomy,
+  });
   if (
     !externalId ||
     !name ||
@@ -104,13 +133,24 @@ export function normalizeCatalogRecord(record: UnknownRecord): ProviderPlace | n
   const street = [properties['addr:housenumber'], properties['addr:street']]
     .filter(Boolean)
     .join(' ');
-  const address =
+  const osmAddress =
     [street, properties['addr:city'], properties['addr:postcode']]
       .map(text)
       .filter(Boolean)
       .join(', ') || null;
+  const address =
+    [primaryAddress.freeform, primaryAddress.locality, primaryAddress.postcode]
+      .map(text)
+      .filter(Boolean)
+      .join(', ') || osmAddress;
   const osmType = text(record.type) ?? 'node';
-  const sourceUrl = `https://www.openstreetmap.org/${osmType}/${externalId.replace(/^\D+/, '')}`;
+  const isOverture = record.theme === 'places' || record.type === 'place';
+  const sourceUrl = isOverture
+    ? 'https://overturemaps.org/'
+    : `https://www.openstreetmap.org/${osmType}/${externalId.replace(/^\D+/, '')}`;
+  const websites = Array.isArray(record.websites ?? properties.websites)
+    ? ((record.websites ?? properties.websites) as unknown[])
+    : [];
 
   return {
     provider: 'osm_catalog',
@@ -120,11 +160,11 @@ export function normalizeCatalogRecord(record: UnknownRecord): ProviderPlace | n
     latitude,
     longitude,
     address,
-    borough: text(properties.borough ?? properties['addr:borough']),
+    borough: text(properties.borough ?? properties['addr:borough'] ?? primaryAddress.locality),
     neighborhood: text(properties.neighbourhood ?? properties['addr:suburb']),
     description: text(properties.description) ?? '',
     cuisine: text(properties.cuisine),
-    websiteUrl: text(properties.website ?? properties['contact:website']),
+    websiteUrl: text(properties.website ?? properties['contact:website'] ?? websites[0]),
     openingHours: text(properties.opening_hours),
     sourceUrl,
     rawPayload: record,
@@ -173,7 +213,7 @@ export const localCatalogAdapter: PlaceProviderAdapter = {
   async fetch(limit) {
     if (!config.CATALOG_DATA_PATH) {
       throw new Error(
-        'CATALOG_DATA_PATH must point to a cached OSM GeoJSON or JSON export. Public Overpass endpoints are intentionally not queried.',
+        'CATALOG_DATA_PATH must point to a cached OSM or Overture GeoJSON/JSON export. Public Overpass endpoints are intentionally not queried.',
       );
     }
     const parsed = JSON.parse(await readFile(config.CATALOG_DATA_PATH, 'utf8')) as unknown;

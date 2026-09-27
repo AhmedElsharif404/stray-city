@@ -23,6 +23,19 @@ describe('ETL normalizers', () => {
     });
   });
 
+  it('derives a map point from the NYC Parks multipolygon geometry', () => {
+    const place = normalizePark({
+      gispropnum: 'Q001',
+      signname: 'Geometry Park',
+      borough: 'Q',
+      multipolygon: {
+        type: 'MultiPolygon',
+        coordinates: [[[[-73.94, 40.74], [-73.92, 40.74], [-73.92, 40.76], [-73.94, 40.76]]]],
+      },
+    });
+    expect(place).toMatchObject({ lat: 40.75, lng: -73.93, category: 'park' });
+  });
+
   it('keeps inspection data informational', () => {
     const place = normalizeRestaurant({
       camis: '5001',

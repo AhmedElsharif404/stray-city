@@ -12,5 +12,7 @@ work/
 *.tsbuildinfo
 .vite/
 .turbo/
+.tools/
+data/catalog/*.geojson
 supabase/.branches/
 supabase/.temp/

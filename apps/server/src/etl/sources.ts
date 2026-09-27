@@ -14,7 +14,7 @@ export async function fetchParks(limit: number): Promise<NormalizedPlaceInput[]>
   const records = await fetchSocrata(
     'enfh-gkve',
     limit,
-    'latitude is not null and longitude is not null',
+    'multipolygon is not null',
   );
   return records
     .map(normalizePark)

@@ -3,6 +3,11 @@ import type { NormalizedPlaceInput, PlaceCategory } from '@stray-city/shared';
 type UnknownRecord = Record<string, unknown>;
 
 const boroughNames: Record<string, string> = {
+  b: 'Brooklyn',
+  m: 'Manhattan',
+  q: 'Queens',
+  r: 'Staten Island',
+  x: 'The Bronx',
   '1': 'Manhattan',
   '2': 'The Bronx',
   '3': 'Brooklyn',
@@ -24,6 +29,12 @@ function text(value: unknown): string | null {
 function number(value: unknown): number | null {
   const parsed = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function object(value: unknown): UnknownRecord {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as UnknownRecord)
+    : {};
 }
 
 function borough(value: unknown): string {
@@ -109,8 +120,9 @@ function basePlace(
 export function normalizePark(record: UnknownRecord): NormalizedPlaceInput | null {
   const externalId = text(record.gispropnum ?? record.property_id ?? record.objectid);
   const name = text(record.signname ?? record.name311 ?? record.name);
-  const lat = number(record.latitude ?? record.lat);
-  const lng = number(record.longitude ?? record.lon ?? record.lng);
+  const center = geometryCenter(record.multipolygon);
+  const lat = number(record.latitude ?? record.lat ?? center?.lat);
+  const lng = number(record.longitude ?? record.lon ?? record.lng ?? center?.lng);
   if (!externalId || !name || lat === null || lng === null || !isWithinNyc(lat, lng)) return null;
 
   const details = normalizeMatchText(
@@ -137,6 +149,27 @@ export function normalizePark(record: UnknownRecord): NormalizedPlaceInput | nul
   normalized.source_url = text(record.url) ?? 'https://www.nycgovparks.org/parks';
   normalized.source_updated_at = text(record.last_modified ?? record.last_edited_date);
   return normalized;
+}
+
+function geometryCenter(value: unknown): { lat: number; lng: number } | null {
+  const geometry = object(value);
+  const points: Array<[number, number]> = [];
+  const collect = (node: unknown): void => {
+    if (!Array.isArray(node)) return;
+    if (node.length >= 2 && Number.isFinite(Number(node[0])) && Number.isFinite(Number(node[1]))) {
+      points.push([Number(node[0]), Number(node[1])]);
+      return;
+    }
+    node.forEach(collect);
+  };
+  collect(geometry.coordinates);
+  if (!points.length) return null;
+  const lngs = points.map(([lng]) => lng);
+  const lats = points.map(([, lat]) => lat);
+  return {
+    lng: (Math.min(...lngs) + Math.max(...lngs)) / 2,
+    lat: (Math.min(...lats) + Math.max(...lats)) / 2,
+  };
 }
 
 export function normalizeRestaurant(record: UnknownRecord): NormalizedPlaceInput | null {

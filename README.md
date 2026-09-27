@@ -115,7 +115,7 @@ npm run etl:catalog
 npm run etl:all
 ```
 
-`ETL_LIMIT=5000 npm run etl:catalog` changes the per-run ceiling. The default is 500 and the hard maximum is 5,000. The catalog job reads the cached file named by `CATALOG_DATA_PATH`; it never sends bulk queries to public Overpass endpoints.
+`ETL_LIMIT=5000 npm run etl:catalog` changes the per-run ceiling. The default is 500 and the hard maximum is 5,000. The catalog job reads the cached file named by `CATALOG_DATA_PATH`; it accepts OSM JSON/GeoJSON and Overture Places GeoJSON (including the current `basic_category`/`taxonomy` schema) and never sends bulk queries to public Overpass endpoints.
 
 The admin page can trigger individual sources. The same endpoints can be called directly:
 

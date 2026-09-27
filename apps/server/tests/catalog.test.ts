@@ -61,6 +61,28 @@ describe('NYC catalog ingestion', () => {
     ).toMatchObject({ provider: 'osm_catalog', category: 'bookstore', borough: null });
   });
 
+  it('normalizes an Overture restaurant feature', () => {
+    expect(
+      normalizeCatalogRecord({
+        id: 'overture-place-42',
+        theme: 'places',
+        type: 'place',
+        names: { primary: 'Queens Night Market' },
+        basic_category: 'restaurant',
+        taxonomy: { primary: 'food_market', hierarchy: ['food_and_drink', 'restaurant'] },
+        addresses: [{ freeform: '47-01 111th St', locality: 'Queens', postcode: '11368' }],
+        websites: ['https://example.com'],
+        geometry: { type: 'Point', coordinates: [-73.8458, 40.7459] },
+      }),
+    ).toMatchObject({
+      externalId: 'overture-place-42',
+      name: 'Queens Night Market',
+      category: 'restaurant',
+      borough: 'Queens',
+      websiteUrl: 'https://example.com',
+    });
+  });
+
   it('deduplicates by source identity and normalized name plus distance', () => {
     const duplicate = place({ external_id: 'node/2', lat: 40.76431, lng: -73.92351 });
     expect(deduplicateNormalizedPlaces([place(), place(), duplicate])).toHaveLength(1);
