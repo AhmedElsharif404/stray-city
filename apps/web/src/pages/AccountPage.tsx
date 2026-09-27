@@ -1,5 +1,5 @@
-import { Bell, Images, LockKeyhole, MapPin, Settings, SlidersHorizontal, UserRound } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Bell, Images, LockKeyhole, MapPin, MessageCircle, RefreshCw, Settings, SlidersHorizontal, UserRound } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
 import { useStrayCity } from '../lib/stray-city-context';
@@ -21,17 +21,22 @@ const sections = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
+const imessageAgentPhone = import.meta.env.VITE_IMESSAGE_AGENT_PHONE?.trim() || '+14156055508';
+const imessageAgentPhoneDisplay = '(415) 605-5508';
+
 export function AccountPage() {
   const location = useLocation();
   const { authUser, currentProfile, updateAvatar } = useStrayCity();
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
   const [avatarPending, setAvatarPending] = useState(false);
   const avatarInput = useRef<HTMLInputElement>(null);
   const section = location.pathname.slice(1);
 
-  useEffect(() => {
-    if (section !== 'gallery' || !supabase || !authUser) return;
-    void (async () => {
+  const loadGallery = useCallback(async () => {
+    if (!supabase || !authUser) return;
+    setGalleryLoading(true);
+    try {
       const { data } = await supabase
         .from('user_gallery_items')
         .select('id, image_url, storage_path, caption, captured_at')
@@ -47,8 +52,17 @@ export function AccountPage() {
         }),
       );
       setGallery(rows);
-    })();
-  }, [authUser, section]);
+    } finally {
+      setGalleryLoading(false);
+    }
+  }, [authUser]);
+
+  useEffect(() => {
+    if (section !== 'gallery' || !authUser) return;
+    void loadGallery();
+    const timer = window.setInterval(() => void loadGallery(), 15_000);
+    return () => window.clearInterval(timer);
+  }, [authUser, loadGallery, section]);
 
   return (
     <div className="page-shell py-8">
@@ -117,7 +131,26 @@ export function AccountPage() {
           {section === 'gallery' && (
             <>
               <p className="eyebrow">Sent from iMessage</p>
-              <h1 className="mt-2 font-display text-4xl">My gallery</h1>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                <h1 className="font-display text-4xl">My gallery</h1>
+                {authUser && (
+                  <button className="button-secondary py-2" disabled={galleryLoading} onClick={() => void loadGallery()}>
+                    <RefreshCw size={16} className={galleryLoading ? 'animate-spin' : ''} /> Refresh
+                  </button>
+                )}
+              </div>
+              <div className="mt-6 rounded-[24px] bg-gradient-to-br from-ink to-violet p-5 text-white">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/55">Stray City iMessage</p>
+                    <p className="mt-1 text-2xl font-bold">{imessageAgentPhoneDisplay}</p>
+                    <p className="mt-1 text-sm text-white/65">Send an image from the same phone number used for your account.</p>
+                  </div>
+                  <a href={`sms:${imessageAgentPhone}`} className="inline-flex items-center gap-2 rounded-full bg-coral px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5">
+                    <MessageCircle size={18} /> Text a photo
+                  </a>
+                </div>
+              </div>
               {!authUser ? <p className="mt-6 text-ink/60">Sign in to see photos connected to your phone number.</p> : gallery.length === 0 ? <p className="mt-6 text-ink/60">Your private gallery is ready. Send a photo to the Stray City iMessage agent to begin.</p> : <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">{gallery.map((item) => item.signedUrl && <figure key={item.id} className="overflow-hidden rounded-2xl bg-ink/5"><img src={item.signedUrl} alt={item.caption ?? 'Gallery photo'} className="aspect-square w-full object-cover" /><figcaption className="p-3 text-xs text-ink/60">{item.caption ?? new Date(item.captured_at).toLocaleString()}</figcaption></figure>)}</div>}
             </>
           )}

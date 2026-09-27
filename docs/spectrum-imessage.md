@@ -2,6 +2,8 @@
 
 Stray City can save photos sent to its Spectrum iMessage agent and can also accept hosted image URLs through a protected Express endpoint.
 
+The configured Stray City iMessage number is **+1 (415) 605-5508**. The web gallery exposes this as a one-tap `sms:` link and refreshes every 15 seconds while open.
+
 ## Configuration
 
 Set these values in `apps/server/.env` (never commit the real values):
@@ -11,6 +13,8 @@ SPECTRUM_PROJECT_ID=
 SPECTRUM_PROJECT_SECRET=
 SPECTRUM_WEBHOOK_SECRET=
 ```
+
+Set `VITE_IMESSAGE_AGENT_PHONE=+14156055508` in the web environment if the agent number changes.
 
 The Spectrum agent starts with the server only when the project ID, project secret, and Supabase admin credentials are configured. Inbound image attachments are limited to 10 MB and are uploaded to the private `imessage-gallery` bucket.
 
