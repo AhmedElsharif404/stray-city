@@ -6,7 +6,12 @@ import { config } from '../config.js';
 import { runAllEtl, runEtl, type EtlSource } from '../etl/runner.js';
 import { HttpError } from '../lib/http.js';
 
-const validSources = new Set<EtlSource>(['nyc_parks', 'nyc_restaurant_inspection', 'ticketmaster']);
+const validSources = new Set<EtlSource>([
+  'nyc_parks',
+  'nyc_restaurant_inspection',
+  'ticketmaster',
+  'osm_catalog',
+]);
 
 export const etlRouter = Router();
 

@@ -108,6 +108,15 @@ interface StrayCityContextValue {
   saveStoryAsEcho: (story: Story) => Promise<void>;
   completeTrailStop: (trail: Trail, place: Place, coordinates?: Coordinates) => Promise<void>;
   verifyCost: (placeId: string, costInfo: string) => Promise<void>;
+  curatePlace: (input: {
+    placeId: string;
+    costVerified: boolean;
+    costInfo: string;
+    priceLevel: number | null;
+    hiddenGemVerified: boolean;
+    category: Place['category'];
+    sidequestObjective: string;
+  }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string, username: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -133,6 +142,7 @@ function mapPlace(row: Record<string, unknown>): Place {
     sidequestObjective: (row.sidequest_objective as string | null) ?? null,
     costVerified: Boolean(row.cost_verified),
     costInfo: (row.cost_info as string | null) ?? null,
+    priceLevel: row.price_level == null ? null : Number(row.price_level),
     hiddenGemVerified: Boolean(row.hidden_gem_verified),
     inspectionGrade: (row.inspection_grade as string | null) ?? null,
     inspectionScore: row.inspection_score == null ? null : Number(row.inspection_score),
@@ -921,6 +931,38 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
     notify('Pricing verified and added to budget filters.');
   };
 
+  const curatePlace: StrayCityContextValue['curatePlace'] = async (input) => {
+    requireAccount();
+    if (supabase) {
+      const { error } = await supabase.rpc('curate_place', {
+        requested_place_id: input.placeId,
+        requested_cost_verified: input.costVerified,
+        requested_cost_info: input.costInfo,
+        requested_price_level: input.priceLevel,
+        requested_hidden_gem_verified: input.hiddenGemVerified,
+        requested_category: input.category,
+        requested_sidequest_objective: input.sidequestObjective,
+      });
+      if (error) throw error;
+    }
+    setPlaces((current) =>
+      current.map((place) =>
+        place.id === input.placeId
+          ? {
+              ...place,
+              costVerified: input.costVerified,
+              costInfo: input.costVerified ? input.costInfo : null,
+              priceLevel: input.costVerified ? input.priceLevel : null,
+              hiddenGemVerified: input.hiddenGemVerified,
+              category: input.category,
+              sidequestObjective: input.sidequestObjective || null,
+            }
+          : place,
+      ),
+    );
+    notify('Place curation saved and added to the audit log.');
+  };
+
   const signIn = async (email: string, password: string) => {
     if (!supabase) {
       notify('Demo mode: connect Supabase to use real accounts.', 'neutral');
@@ -994,6 +1036,7 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
       saveStoryAsEcho,
       completeTrailStop,
       verifyCost,
+      curatePlace,
       signIn,
       signUp,
       signOut,

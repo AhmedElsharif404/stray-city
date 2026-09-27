@@ -101,6 +101,96 @@ insert into public.places (
     array['Ask about regional specials.', 'The garden is worth waiting for in warm weather.'],
     array['food', 'groups', 'spicy', 'garden'], 'Thai', null, true, 'Mains mostly $14–$24', false,
     'A', 8, '2026-05-22', null, null, 'admin', 'sample-sripraphai', 'https://sripraphai.com/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000011', 'Museum of the Moving Image', 'museum',
+    40.7563, -73.9239, '36-01 35th Ave, Astoria, NY', 'Queens', 'Astoria',
+    'Film, television, and digital-media history in a former studio complex.', array[]::text[], array['Try the playable arcade collection.'], array['film', 'rainy-day'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-moving-image', 'https://movingimage.org/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000012', 'Astoria Bookshop', 'bookstore',
+    40.7638, -73.9236, '36-19 30th St, Astoria, NY', 'Queens', 'Astoria',
+    'An independent neighborhood bookshop with readings and community shelves.', array[]::text[], array['Check the local-author shelf.'], array['books', 'quiet'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-astoria-bookshop', 'https://astoriabookshop.com/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000013', 'The Noguchi Museum', 'museum',
+    40.7669, -73.9381, '9-01 33rd Rd, Long Island City, NY', 'Queens', 'Astoria',
+    'Isamu Noguchi sculptures arranged through quiet galleries and a stone garden.', array[]::text[], array['Pair it with Socrates Sculpture Park.'], array['art', 'garden', 'quiet'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-noguchi', 'https://www.noguchi.org/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000014', 'Bohemian Hall & Beer Garden', 'bar',
+    40.7729, -73.9156, '29-19 24th Ave, Astoria, NY', 'Queens', 'Astoria',
+    'A century-old outdoor gathering place for Czech food, music, and long communal tables.', array[]::text[], array['The courtyard is best on a mild afternoon.'], array['outdoors', 'groups', 'music'], 'Czech', null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-bohemian-hall', 'https://bohemianhall.com/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000015', 'Welling Court Mural Project', 'public_art',
+    40.7691, -73.9334, '11-98 Welling Ct, Astoria, NY', 'Queens', 'Astoria',
+    'A changing outdoor collection of murals spread across residential blocks.', array[]::text[], array['Walk the surrounding blocks—the art extends beyond the court.'], array['art', 'walk', 'outdoors'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-welling-court', null, true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000016', 'The Little Red Lighthouse', 'landmark',
+    40.8506, -73.9467, 'Fort Washington Park, New York, NY', 'Manhattan', 'Washington Heights',
+    'A tiny lighthouse tucked directly beneath the George Washington Bridge.', array[]::text[], array['Approach along the Hudson River Greenway.'], array['history', 'waterfront', 'walk'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-little-red-lighthouse', null, true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000017', 'McGolrick Park', 'park',
+    40.7244, -73.9433, 'Russell St & Nassau Ave, Brooklyn, NY', 'Brooklyn', 'Greenpoint',
+    'A leafy neighborhood park centered on a historic pavilion.', array[]::text[], array['Visit during the weekend farmers market.'], array['park', 'quiet', 'market'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-mcgolrick', null, true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000018', 'Books Are Magic', 'bookstore',
+    40.6842, -73.9955, '225 Smith St, Brooklyn, NY', 'Brooklyn', 'Cobble Hill',
+    'A bright independent bookstore with frequent author events.', array[]::text[], array['Look for signed editions near the register.'], array['books', 'events'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-books-are-magic', 'https://booksaremagic.net/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000019', 'The Bronx Museum', 'museum',
+    40.8312, -73.9197, '1040 Grand Concourse, Bronx, NY', 'The Bronx', 'Concourse',
+    'Contemporary art rooted in the Bronx and its global communities.', array[]::text[], array['Admission is free.'], array['art', 'rainy-day'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-bronx-museum', 'https://bronxmuseum.org/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000020', 'Wave Hill', 'garden',
+    40.8978, -73.9117, '649 W 249th St, Bronx, NY', 'The Bronx', 'Riverdale',
+    'A public garden and cultural center overlooking the Hudson and Palisades.', array[]::text[], array['Go on a clear morning for the river view.'], array['garden', 'views', 'quiet'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-wave-hill', 'https://www.wavehill.org/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000021', 'Snug Harbor Botanical Garden', 'garden',
+    40.6436, -74.1028, '1000 Richmond Ter, Staten Island, NY', 'Staten Island', 'Randall Manor',
+    'Historic grounds, wetlands, and themed gardens surrounding a cultural campus.', array[]::text[], array['Leave time for the Chinese Scholar''s Garden.'], array['garden', 'history', 'walk'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-snug-harbor', 'https://snug-harbor.org/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000022', 'Nuyorican Poets Cafe', 'music_venue',
+    40.7218, -73.9817, '236 E 3rd St, New York, NY', 'Manhattan', 'Lower East Side',
+    'A landmark stage for poetry, music, theatre, and spoken-word performance.', array[]::text[], array['Check the calendar before visiting.'], array['poetry', 'music', 'night'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-nuyorican', 'https://www.nuyorican.org/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000023', 'Essex Market', 'market',
+    40.7180, -73.9882, '88 Essex St, New York, NY', 'Manhattan', 'Lower East Side',
+    'A public market bringing neighborhood food vendors under one roof.', array[]::text[], array['Browse first, then build a shared lunch.'], array['food', 'market', 'rainy-day'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-essex-market', 'https://www.essexmarket.nyc/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000024', 'Film Forum', 'cinema',
+    40.7284, -74.0044, '209 W Houston St, New York, NY', 'Manhattan', 'Greenwich Village',
+    'An independent cinema for repertory classics and new documentary films.', array[]::text[], array['Arrive early for popular restorations.'], array['film', 'rainy-day'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-film-forum', 'https://filmforum.org/', true
+  ),
+  (
+    '10000000-0000-4000-8000-000000000025', 'Jamaica Bay Wildlife Refuge', 'attraction',
+    40.6164, -73.8240, '175-10 Cross Bay Blvd, Queens, NY', 'Queens', 'Broad Channel',
+    'Salt-marsh trails and birding overlooks inside Gateway National Recreation Area.', array[]::text[], array['Bring binoculars and check the tide.'], array['wildlife', 'outdoors', 'quiet'], null, null,
+    false, null, false, null, null, null, null, null, 'admin', 'sample-jamaica-bay', 'https://www.nps.gov/gate/', true
   )
 on conflict (id) do update set
   name = excluded.name,

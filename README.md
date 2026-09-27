@@ -7,7 +7,7 @@ The repository is a TypeScript monorepo with a React/Vite frontend, a small Expr
 ## What is implemented
 
 - Synced Leaflet map and card list with borough, neighborhood, category, date, verified-budget, text, and vibe filters.
-- A real street basemap with OpenStreetMap tiles for ordinary interactive use, upgraded to Stadia Maps styling when a key is present.
+- Leaflet with managed MapTiler Streets or Stadia Maps tiles; raw public OpenStreetMap tile servers are never used.
 - Near Me, Now & Near, category pins with icon-and-text labels, place details, favorites, and shareable canvas-generated Stray Cards.
 - Restaurants, cafés, cheap eats, inspection metadata, and audited staff-only price verification.
 - Geolocation-gated Echo unlocks, reactions, reports, owner soft-delete, and a separate public scrapbook.
@@ -47,7 +47,7 @@ pnpm install --frozen-lockfile
 pnpm dev:web
 ```
 
-Open `http://localhost:5173`. If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are absent, the app uses only visibly labeled sample data. All major screens and non-sensitive interactions remain reviewable. The map uses the standard OpenStreetMap basemap by default and automatically switches to Stadia Maps when a key is configured.
+Open `http://localhost:5173`. If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are absent, the app uses only visibly labeled sample data. All major screens and non-sensitive interactions remain reviewable. Configure either `VITE_MAPTILER_KEY` or `VITE_STADIA_MAPS_API_KEY` for managed street tiles; pins and the synced list remain functional without a key.
 
 To run both frontend and ETL server:
 
@@ -84,6 +84,7 @@ The signup trigger creates `public.users` from Auth metadata. Echo and trail pro
 | `VITE_SUPABASE_URL`        | For real data | Supabase project URL.                                   |
 | `VITE_SUPABASE_ANON_KEY`   | For real data | Public anon key; access is constrained by RLS.          |
 | `VITE_STADIA_MAPS_API_KEY` | Optional      | Stadia Maps key used for managed production tiles.      |
+| `VITE_MAPTILER_KEY`        | Optional      | MapTiler key for the Leaflet Streets basemap.           |
 | `VITE_SERVER_URL`          | For admin ETL | Express server origin, such as `http://localhost:8787`. |
 
 ### Server — `apps/server/.env`
@@ -96,11 +97,25 @@ The signup trigger creates `public.users` from Auth metadata. Echo and trail pro
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes               | Server-only service-role key used for ETL upserts.       |
 | `ETL_ADMIN_TOKEN`           | Yes               | High-entropy token required in the `x-etl-token` header. |
 | `TICKETMASTER_API_KEY`      | Ticketmaster only | Discovery API key.                                       |
+| `MAPTILER_KEY`              | Provider option   | Reserved for a MapTiler tile deployment.                 |
 | `NYC_OPEN_DATA_APP_TOKEN`   | Recommended       | Raises NYC Open Data rate limits.                        |
+| `CATALOG_DATA_PATH`         | Catalog import    | Cached OSM JSON or GeoJSON file; never a browser URL.    |
 | `ETL_CRON_ENABLED`          | No                | Set to `true` to enable in-process scheduling.           |
 | `ETL_CRON_SCHEDULE`         | No                | Cron expression; defaults to every six hours.            |
 
 ## ETL operations
+
+Run each idempotent import from the repository root:
+
+```bash
+npm run etl:parks
+npm run etl:inspections
+npm run etl:events
+npm run etl:catalog
+npm run etl:all
+```
+
+`ETL_LIMIT=5000 npm run etl:catalog` changes the per-run ceiling. The default is 500 and the hard maximum is 5,000. The catalog job reads the cached file named by `CATALOG_DATA_PATH`; it never sends bulk queries to public Overpass endpoints.
 
 The admin page can trigger individual sources. The same endpoints can be called directly:
 
@@ -114,11 +129,24 @@ curl -X POST "http://localhost:8787/api/etl/nyc_restaurant_inspection?limit=500"
 curl -X POST "http://localhost:8787/api/etl/ticketmaster?limit=200" \
   -H "x-etl-token: $ETL_ADMIN_TOKEN"
 
+curl -X POST "http://localhost:8787/api/etl/osm_catalog?limit=5000" \
+  -H "x-etl-token: $ETL_ADMIN_TOKEN"
+
 curl -X POST "http://localhost:8787/api/etl/all?limit=500" \
   -H "x-etl-token: $ETL_ADMIN_TOKEN"
 ```
 
-NYC Parks uses dataset `enfh-gkve`; restaurant inspections use `43nn-pn8j`. Inspection imports set only inspection metadata and never infer price or hidden-gem status. Cost information enters discovery filters only after staff verification.
+NYC Parks uses dataset `enfh-gkve`; restaurant inspections use `43nn-pn8j`. Inspection imports match existing restaurants and cafés by normalized name plus address, ZIP, or proximity, and update only informational grade fields. They never create prices, cheap-eat labels, or hidden-gem labels. Cost information enters discovery filters only after staff verification.
+
+### Keys and source decisions
+
+- Copy the project URL and service-role key from Supabase **Project Settings → API**. Keep the service-role key on the Express server only.
+- Register a Ticketmaster developer application to obtain `TICKETMASTER_API_KEY`. Event imports are blocked without it.
+- NYC Open Data works without a token at low volume; create an app token on the NYC Open Data developer portal for steadier quotas.
+- The frontend currently uses Stadia Maps when `VITE_STADIA_MAPS_API_KEY` is set. `MAPTILER_KEY` is included for deployments that choose MapTiler instead.
+- The base catalog intentionally requires a cached OSM JSON/GeoJSON extract in `CATALOG_DATA_PATH`. Selecting and licensing the production extract/provider remains a deployment decision; public Overpass endpoints are not used for bulk ingestion.
+
+Every adapter emits one normalized record shape, coordinates are rejected outside NYC bounds, borough is inferred only when absent, and `place_sources` preserves provider IDs and raw provenance. ETL runs record read, created, updated, skipped, and rejected counts. Ticketmaster records are retained but marked inactive after their end time.
 
 For production scheduling, prefer a platform cron job calling `/api/etl/all` over an in-process cron when the server can scale horizontally. Keep `ETL_CRON_ENABLED=false` in that setup so multiple instances do not duplicate runs.
 

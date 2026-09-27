@@ -38,6 +38,28 @@ function compactAddress(parts: unknown[]): string | null {
   return result || null;
 }
 
+export function isWithinNyc(latitude: number, longitude: number): boolean {
+  return (
+    latitude >= 40.4774 && latitude <= 40.9176 && longitude >= -74.2591 && longitude <= -73.7002
+  );
+}
+
+export function inferBorough(latitude: number, longitude: number): string {
+  if (longitude < -74.05) return 'Staten Island';
+  if (latitude > 40.79 && longitude > -73.94) return 'The Bronx';
+  if (longitude > -73.93) return 'Queens';
+  if (latitude < 40.74) return 'Brooklyn';
+  return 'Manhattan';
+}
+
+export function normalizeMatchText(value: string | null | undefined): string {
+  return (value ?? '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
 function basePlace(
   record: UnknownRecord,
   source: NormalizedPlaceInput['source'],
@@ -61,9 +83,13 @@ function basePlace(
     local_tips: [],
     tags: [],
     cuisine: null,
+    website_url: null,
+    phone: null,
+    opening_hours: null,
     sidequest_objective: null,
     cost_verified: false,
     cost_info: null,
+    price_level: null,
     hidden_gem_verified: false,
     inspection_grade: null,
     inspection_score: null,
@@ -85,13 +111,20 @@ export function normalizePark(record: UnknownRecord): NormalizedPlaceInput | nul
   const name = text(record.signname ?? record.name311 ?? record.name);
   const lat = number(record.latitude ?? record.lat);
   const lng = number(record.longitude ?? record.lon ?? record.lng);
-  if (!externalId || !name || lat === null || lng === null) return null;
+  if (!externalId || !name || lat === null || lng === null || !isWithinNyc(lat, lng)) return null;
+
+  const details = normalizeMatchText(
+    [text(record.typecategory), text(record.description), name].filter(Boolean).join(' '),
+  );
+  const category: PlaceCategory = /playground|recreation|waterfront|public space/.test(details)
+    ? 'attraction'
+    : 'park';
 
   const normalized = basePlace(
     record,
     'nyc_parks',
     externalId,
-    'park',
+    category,
     name,
     lat,
     lng,
@@ -99,6 +132,7 @@ export function normalizePark(record: UnknownRecord): NormalizedPlaceInput | nul
   );
   normalized.address = compactAddress([record.location, record.address]);
   normalized.description = text(record.description) ?? `A New York City park managed by NYC Parks.`;
+  normalized.website_url = text(record.url);
   normalized.tags = ['outdoors', 'park', 'daytime'];
   normalized.source_url = text(record.url) ?? 'https://www.nycgovparks.org/parks';
   normalized.source_updated_at = text(record.last_modified ?? record.last_edited_date);
@@ -110,7 +144,15 @@ export function normalizeRestaurant(record: UnknownRecord): NormalizedPlaceInput
   const name = text(record.dba);
   const lat = number(record.latitude);
   const lng = number(record.longitude);
-  if (!externalId || !name || lat === null || lng === null || (lat === 0 && lng === 0)) return null;
+  if (
+    !externalId ||
+    !name ||
+    lat === null ||
+    lng === null ||
+    (lat === 0 && lng === 0) ||
+    !isWithinNyc(lat, lng)
+  )
+    return null;
 
   const cuisine = text(record.cuisine_description);
   const normalized = basePlace(
@@ -130,6 +172,7 @@ export function normalizeRestaurant(record: UnknownRecord): NormalizedPlaceInput
   ]);
   normalized.description = cuisine ? `${cuisine} restaurant.` : 'New York City restaurant.';
   normalized.cuisine = cuisine;
+  normalized.phone = text(record.phone);
   normalized.tags = ['food', ...(cuisine ? [cuisine.toLowerCase()] : [])];
   normalized.inspection_grade = text(record.grade);
   normalized.inspection_score = number(record.score);
@@ -167,7 +210,7 @@ export function normalizeTicketmasterEvent(record: TicketmasterEvent): Normalize
   const name = text(record.name);
   const lat = number(venue?.location?.latitude);
   const lng = number(venue?.location?.longitude);
-  if (!externalId || !name || lat === null || lng === null) return null;
+  if (!externalId || !name || lat === null || lng === null || !isWithinNyc(lat, lng)) return null;
 
   const normalized = basePlace(
     record,
@@ -177,7 +220,7 @@ export function normalizeTicketmasterEvent(record: TicketmasterEvent): Normalize
     name,
     lat,
     lng,
-    'New York City',
+    inferBorough(lat, lng),
   );
   normalized.address = compactAddress([
     venue?.address?.line1,
@@ -203,5 +246,6 @@ export function normalizeTicketmasterEvent(record: TicketmasterEvent): Normalize
     (start?.localDate ? `${start.localDate}T${start.localTime ?? '12:00:00'}` : null);
   normalized.event_ends_at = record.dates?.end?.dateTime ?? null;
   normalized.source_url = text(record.url);
+  normalized.website_url = text(record.url);
   return normalized;
 }

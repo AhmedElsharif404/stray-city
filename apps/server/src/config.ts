@@ -15,6 +15,8 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: optionalSecret,
   TICKETMASTER_API_KEY: optionalSecret,
   NYC_OPEN_DATA_APP_TOKEN: optionalSecret,
+  MAPTILER_KEY: optionalSecret,
+  CATALOG_DATA_PATH: optionalSecret,
   ETL_ADMIN_TOKEN: optionalSecret,
   ETL_CRON_ENABLED: z
     .enum(['true', 'false'])

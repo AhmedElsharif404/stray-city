@@ -1,12 +1,15 @@
 import { BadgeDollarSign, DatabaseZap, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
+import { PLACE_CATEGORIES } from '@stray-city/shared';
+
 import { categoryMeta } from '../lib/format';
 import { useStrayCity } from '../lib/stray-city-context';
 
 export function AdminPage() {
-  const { places, currentProfile, verifyCost, isDemoMode } = useStrayCity();
+  const { places, currentProfile, curatePlace, isDemoMode } = useStrayCity();
   const [selectedId, setSelectedId] = useState(places[0]?.id ?? '');
+  const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const selected = places.find((place) => place.id === selectedId);
 
@@ -29,7 +32,15 @@ export function AdminPage() {
     setError('');
     const data = new FormData(event.currentTarget);
     try {
-      await verifyCost(String(data.get('placeId')), String(data.get('costInfo')));
+      await curatePlace({
+        placeId: String(data.get('placeId')),
+        costVerified: data.get('costVerified') === 'on',
+        costInfo: String(data.get('costInfo') ?? ''),
+        priceLevel: data.get('priceLevel') ? Number(data.get('priceLevel')) : null,
+        hiddenGemVerified: data.get('hiddenGemVerified') === 'on',
+        category: String(data.get('category')) as (typeof PLACE_CATEGORIES)[number],
+        sidequestObjective: String(data.get('sidequestObjective') ?? ''),
+      });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Verification failed.');
     }
@@ -69,6 +80,7 @@ export function AdminPage() {
       )}
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_.8fr]">
         <form
+          key={selectedId}
           className="rounded-[28px] border border-ink/10 bg-white p-6 shadow-card"
           onSubmit={(event) => void submit(event)}
         >
@@ -76,8 +88,16 @@ export function AdminPage() {
             <BadgeDollarSign />
             <p className="eyebrow !text-gold">Price verification</p>
           </div>
-          <h2 className="mt-2 font-display text-3xl">Confirm what it costs.</h2>
+          <h2 className="mt-2 font-display text-3xl">Curate the catalog.</h2>
           <div className="mt-5 space-y-4">
+            <label className="field-label">
+              Search places
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Name or neighborhood"
+              />
+            </label>
             <label className="field-label">
               Place
               <select
@@ -85,11 +105,17 @@ export function AdminPage() {
                 value={selectedId}
                 onChange={(event) => setSelectedId(event.target.value)}
               >
-                {places.map((place) => (
-                  <option key={place.id} value={place.id}>
-                    {place.name}
-                  </option>
-                ))}
+                {places
+                  .filter((place) =>
+                    `${place.name} ${place.neighborhood ?? ''}`
+                      .toLowerCase()
+                      .includes(query.toLowerCase()),
+                  )
+                  .map((place) => (
+                    <option key={place.id} value={place.id}>
+                      {place.name}
+                    </option>
+                  ))}
               </select>
             </label>
             {selected && (
@@ -117,11 +143,55 @@ export function AdminPage() {
               </div>
             )}
             <label className="field-label">
+              Category
+              <select name="category" defaultValue={selected?.category}>
+                {PLACE_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {categoryMeta[category].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input name="costVerified" type="checkbox" defaultChecked={selected?.costVerified} />
+              Cost is manually verified
+            </label>
+            <label className="field-label">
               Verified cost description
-              <input name="costInfo" required placeholder="Most items $8–$14" />
+              <input
+                name="costInfo"
+                defaultValue={selected?.costInfo ?? ''}
+                placeholder="Most items $8–$14"
+              />
+            </label>
+            <label className="field-label">
+              Price level
+              <select name="priceLevel" defaultValue={selected?.priceLevel ?? ''}>
+                <option value="">Not set</option>
+                <option value="1">$</option>
+                <option value="2">$$</option>
+                <option value="3">$$$</option>
+                <option value="4">$$$$</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                name="hiddenGemVerified"
+                type="checkbox"
+                defaultChecked={selected?.hiddenGemVerified}
+              />
+              Hidden gem verified
+            </label>
+            <label className="field-label">
+              Sidequest objective
+              <textarea
+                name="sidequestObjective"
+                defaultValue={selected?.sidequestObjective ?? ''}
+                placeholder="Find the mosaic tucked behind the garden wall."
+              />
             </label>
             {error && <p className="rounded-xl bg-coral/10 p-3 text-sm text-coral">{error}</p>}
-            <button className="button-primary w-full">Verify pricing</button>
+            <button className="button-primary w-full">Save curated place</button>
           </div>
         </form>
         <aside className="rounded-[28px] border border-ink/10 bg-white p-6 shadow-card">
@@ -146,6 +216,9 @@ export function AdminPage() {
             </button>
             <button className="button-secondary w-full" onClick={() => void runEtl('ticketmaster')}>
               Sync Ticketmaster
+            </button>
+            <button className="button-secondary w-full" onClick={() => void runEtl('osm_catalog')}>
+              Sync base catalog
             </button>
           </div>
           <p className="mt-4 text-xs leading-relaxed text-ink/45">

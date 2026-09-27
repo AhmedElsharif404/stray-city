@@ -7,6 +7,11 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
+    "etl:parks": "tsx src/etl/cli.ts parks",
+    "etl:inspections": "tsx src/etl/cli.ts inspections",
+    "etl:events": "tsx src/etl/cli.ts events",
+    "etl:catalog": "tsx src/etl/cli.ts catalog",
+    "etl:all": "tsx src/etl/cli.ts all",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json --noEmit"

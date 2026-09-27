@@ -7,6 +7,20 @@ export const PLACE_CATEGORIES = [
   'hidden_gem',
   'park',
   'landmark',
+  'bakery',
+  'bar',
+  'museum',
+  'gallery',
+  'theatre',
+  'cinema',
+  'library',
+  'bookstore',
+  'garden',
+  'market',
+  'attraction',
+  'viewpoint',
+  'public_art',
+  'music_venue',
 ] as const;
 
 export type PlaceCategory = (typeof PLACE_CATEGORIES)[number];
@@ -33,13 +47,20 @@ export interface Place {
   sidequestObjective: string | null;
   costVerified: boolean;
   costInfo: string | null;
+  priceLevel?: number | null;
   hiddenGemVerified: boolean;
   inspectionGrade: string | null;
   inspectionScore: number | null;
   inspectionDate: string | null;
   eventStartsAt: string | null;
   eventEndsAt: string | null;
-  source: 'community' | 'admin' | 'nyc_parks' | 'nyc_restaurant_inspection' | 'ticketmaster';
+  source:
+    | 'community'
+    | 'admin'
+    | 'nyc_parks'
+    | 'nyc_restaurant_inspection'
+    | 'ticketmaster'
+    | 'osm_catalog';
   sourceUrl: string | null;
   isSample: boolean;
 }
@@ -172,9 +193,13 @@ export interface NormalizedPlaceInput {
   local_tips: string[];
   tags: string[];
   cuisine: string | null;
+  website_url: string | null;
+  phone: string | null;
+  opening_hours: Record<string, unknown> | null;
   sidequest_objective: string | null;
   cost_verified: boolean;
   cost_info: string | null;
+  price_level: number | null;
   hidden_gem_verified: boolean;
   inspection_grade: string | null;
   inspection_score: number | null;
