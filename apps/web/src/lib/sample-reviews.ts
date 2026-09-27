@@ -20,7 +20,15 @@ export interface SampleProfileDetails {
   homeBorough: string;
   joined: string;
   recentComments: Array<{ place: string; text: string; when: string }>;
-  photos: Array<{ url: string; alt: string }>;
+  photos: SampleProfilePhoto[];
+}
+
+export interface SampleProfilePhoto {
+  url: string;
+  alt: string;
+  takenAt: string;
+  location: string;
+  comment: string | null;
 }
 
 const profiles = [
@@ -85,6 +93,14 @@ export function sampleProfileDetails(username: string): SampleProfileDetails | n
     photos: Array.from({ length: 3 }, (_, index) => ({
       url: `https://picsum.photos/seed/${encodeURIComponent(`city-stray-${username}-${index}`)}/700/700`,
       alt: `Sample photo ${index + 1} from ${profile.displayName}'s city walk`,
+      takenAt:
+        index === 0
+          ? 'September 23, 2026 · 6:42 PM'
+          : index === 1
+            ? 'September 14, 2026 · 10:18 AM'
+            : 'August 29, 2026 · 4:07 PM',
+      location: recentPlaces[(seed + index * 2) % recentPlaces.length]!,
+      comment: index === 1 ? null : reviewLines[(seed + index * 4 + 1) % reviewLines.length]!,
     })),
   };
 }

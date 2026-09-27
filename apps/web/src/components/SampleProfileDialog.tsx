@@ -1,10 +1,12 @@
-import { Camera, MapPin, MessageCircleHeart, X } from 'lucide-react';
+import { CalendarDays, Camera, MapPin, MessageCircleHeart, X } from 'lucide-react';
+import { useState } from 'react';
 
-import { sampleProfileDetails } from '../lib/sample-reviews';
+import { sampleProfileDetails, type SampleProfilePhoto } from '../lib/sample-reviews';
 import { SampleBadge } from './SampleBadge';
 
 export function SampleProfileDialog({ username, onClose }: { username: string; onClose: () => void }) {
   const profile = sampleProfileDetails(username);
+  const [selectedPhoto, setSelectedPhoto] = useState<SampleProfilePhoto | null>(null);
   if (!profile) return null;
 
   return (
@@ -71,14 +73,67 @@ export function SampleProfileDialog({ username, onClose }: { username: string; o
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
           {profile.photos.map((photo) => (
-            <img
+            <button
               key={photo.url}
-              src={photo.url}
-              alt={photo.alt}
-              className="aspect-square w-full rounded-2xl object-cover"
-            />
+              className="group relative overflow-hidden rounded-2xl focus-visible:ring-2 focus-visible:ring-blue"
+              onClick={() => setSelectedPhoto(photo)}
+              aria-label={`Open ${photo.alt}`}
+            >
+              <img
+                src={photo.url}
+                alt={photo.alt}
+                className="aspect-square w-full object-cover transition duration-300 group-hover:scale-105"
+              />
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-2 pb-2 pt-7 text-left text-[10px] font-bold text-white">
+                View details
+              </span>
+            </button>
           ))}
         </div>
+
+        {selectedPhoto && (
+          <div
+            className="fixed inset-0 z-[2100] grid place-items-center bg-ink/75 p-4 backdrop-blur-sm"
+            role="presentation"
+            onMouseDown={() => setSelectedPhoto(null)}
+          >
+            <section
+              className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[28px] bg-cream shadow-2xl"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Photo details"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div className="relative">
+                <img src={selectedPhoto.url} alt={selectedPhoto.alt} className="max-h-[56vh] w-full object-cover" />
+                <button
+                  className="glass-button absolute right-4 top-4 !px-3"
+                  onClick={() => setSelectedPhoto(null)}
+                  aria-label="Close photo details"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-5 sm:p-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  <SampleBadge />
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink/55">
+                    <CalendarDays size={14} /> {selectedPhoto.takenAt}
+                  </span>
+                </div>
+                <p className="mt-3 flex items-center gap-1.5 text-sm font-bold">
+                  <MapPin size={15} className="text-blue" /> {selectedPhoto.location}
+                </p>
+                <div className="mt-4 rounded-2xl border border-ink/10 bg-white p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-ink/40">Photo comment</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink/75">
+                    {selectedPhoto.comment ?? 'No comment was left with this photo.'}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
       </section>
     </div>
   );
