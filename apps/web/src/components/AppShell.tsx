@@ -43,7 +43,7 @@ export function AppShell({ children }: PropsWithChildren) {
               <span className="block font-display text-[1.55rem] font-bold leading-none tracking-[-0.04em]">
                 Stray City
               </span>
-              <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.18em] text-mint">
+              <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.18em] text-blue">
                 Find your own way
               </span>
             </span>

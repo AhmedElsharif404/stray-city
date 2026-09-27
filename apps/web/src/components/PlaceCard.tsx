@@ -2,7 +2,7 @@ import { Clock3, MapPin } from 'lucide-react';
 
 import type { Place } from '@stray-city/shared';
 
-import { categoryMeta, formatDateTime } from '../lib/format';
+import { categoryMeta, formatDateTime, placePhoto } from '../lib/format';
 import { SampleBadge } from './SampleBadge';
 
 export function PlaceCard({
@@ -20,13 +20,7 @@ export function PlaceCard({
   return (
     <button className={`place-card ${selected ? 'place-card-selected' : ''}`} onClick={onClick}>
       <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-ink/5 sm:h-32 sm:w-36">
-        {place.photos[0] ? (
-          <img src={place.photos[0]} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="grid h-full place-items-center text-3xl" style={{ color: meta.color }}>
-            {meta.icon}
-          </div>
-        )}
+        <img src={placePhoto(place)} alt="" className="h-full w-full object-cover" />
         {place.isSample && <SampleBadge className="absolute left-2 top-2" />}
       </div>
       <div className="min-w-0 flex-1 py-1 text-left">

@@ -22,7 +22,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import type { Place } from '@stray-city/shared';
 
 import { getBrowserLocation } from '../lib/geo';
-import { categoryMeta, timeAgo } from '../lib/format';
+import { categoryMeta, placePhoto, placeSummary, timeAgo } from '../lib/format';
 import { useStrayCity } from '../lib/stray-city-context';
 import { SampleBadge } from './SampleBadge';
 import { StrayCardDialog } from './StrayCardDialog';
@@ -111,9 +111,8 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
   return (
     <aside className="place-panel" aria-label={`${place.name} details`}>
       <div className="relative h-64 bg-ink/5">
-        {place.photos[0] && (
-          <img src={place.photos[0]} alt={place.name} className="h-full w-full object-cover" />
-        )}
+        <img src={placePhoto(place)} alt={place.name} className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-ink/10" />
         <div className="absolute inset-x-0 top-0 flex justify-between p-4">
           <button className="glass-button" onClick={onClose}>
             <ChevronLeft size={18} />
@@ -138,6 +137,11 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
               <MapPin size={15} />
               {place.address ?? `${place.neighborhood}, ${place.borough}`}
             </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="micro-chip">{meta.icon} {meta.label}</span>
+              <span className="micro-chip">{place.borough}</span>
+              {place.cuisine && <span className="micro-chip">{place.cuisine}</span>}
+            </div>
           </div>
           <button
             className={`icon-button shrink-0 ${favorites.has(place.id) ? '!bg-coral !text-white' : ''}`}
@@ -147,6 +151,10 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
             <Heart size={19} fill={favorites.has(place.id) ? 'currentColor' : 'none'} />
           </button>
         </div>
+
+        <p className="mt-4 line-clamp-3 rounded-2xl border border-blue/10 bg-blue/5 p-4 text-sm leading-relaxed text-ink/75">
+          {placeSummary(place)}
+        </p>
 
         <div className="mt-5 grid grid-cols-3 gap-2">
           <button className="action-tile" onClick={() => void handleCheckIn()} disabled={busy}>
@@ -182,7 +190,7 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
 
         {tab === 'about' && (
           <div className="space-y-6 pt-5">
-            <p className="leading-relaxed text-ink/75">{place.description}</p>
+            <p className="leading-relaxed text-ink/75">{placeSummary(place)}</p>
             {place.sidequestObjective && (
               <div className="rounded-2xl bg-mint/20 p-4">
                 <p className="flex items-center gap-2 font-bold">

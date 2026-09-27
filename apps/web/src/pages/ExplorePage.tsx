@@ -131,7 +131,7 @@ export function ExplorePage() {
             {isDemoMode && <span className="sample-badge">Sample discoveries</span>}
           </div>
           <h1 className="mt-2 max-w-3xl font-display text-4xl leading-[0.98] tracking-[-0.045em] sm:text-6xl">
-            Wander toward something <span className="text-coral">worth finding.</span>
+            Wander toward something <span className="text-blue">worth finding.</span>
           </h1>
         </div>
         <button
