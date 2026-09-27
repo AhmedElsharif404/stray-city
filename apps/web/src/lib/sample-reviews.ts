@@ -11,13 +11,43 @@ export interface SampleReview {
   visitNote: string;
 }
 
+export interface SampleProfileDetails {
+  displayName: string;
+  username: string;
+  initials: string;
+  accent: string;
+  bio: string;
+  homeBorough: string;
+  joined: string;
+  recentComments: Array<{ place: string; text: string; when: string }>;
+  photos: Array<{ url: string; alt: string }>;
+}
+
 const profiles = [
-  { displayName: 'Maya Chen', username: 'mayawanders', initials: 'MC', accent: '#4B73F2' },
-  { displayName: 'Jordan Reyes', username: 'boroughbites', initials: 'JR', accent: '#EF6658' },
-  { displayName: 'Nia Thompson', username: 'niarambles', initials: 'NT', accent: '#7558E8' },
-  { displayName: 'Samir Patel', username: 'citysamir', initials: 'SP', accent: '#2D438D' },
-  { displayName: 'Elena Brooks', username: 'elenafinds', initials: 'EB', accent: '#F08A78' },
-  { displayName: 'Theo Martin', username: 'theooutside', initials: 'TM', accent: '#3659C8' },
+  { displayName: 'Maya Chen', username: 'mayawanders', initials: 'MC', accent: '#4B73F2', homeBorough: 'Queens', joined: 'Spring 2025', bio: 'Museum mornings, long walks, and small places with a big story.' },
+  { displayName: 'Jordan Reyes', username: 'boroughbites', initials: 'JR', accent: '#EF6658', homeBorough: 'The Bronx', joined: 'Summer 2025', bio: 'Always looking for an affordable plate and the block worth exploring after it.' },
+  { displayName: 'Nia Thompson', username: 'niarambles', initials: 'NT', accent: '#7558E8', homeBorough: 'Brooklyn', joined: 'Winter 2024', bio: 'Public art, neighborhood history, and camera-roll-worthy side streets.' },
+  { displayName: 'Samir Patel', username: 'citysamir', initials: 'SP', accent: '#2D438D', homeBorough: 'Manhattan', joined: 'Autumn 2024', bio: 'Finding quiet corners in a loud city, usually before the afternoon rush.' },
+  { displayName: 'Elena Brooks', username: 'elenafinds', initials: 'EB', accent: '#F08A78', homeBorough: 'Staten Island', joined: 'Spring 2025', bio: 'Gardens, waterfront views, and places that reward taking the long way.' },
+  { displayName: 'Theo Martin', username: 'theooutside', initials: 'TM', accent: '#3659C8', homeBorough: 'Brooklyn', joined: 'Summer 2024', bio: 'Parks, city trails, and low-key weekend adventures across all five boroughs.' },
+];
+
+const profilePhotos = [
+  { url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=700&q=82', alt: 'Sunlight through trees on a city walk' },
+  { url: 'https://images.unsplash.com/photo-1522083165195-3424ed129620?auto=format&fit=crop&w=700&q=82', alt: 'New York architecture discovered nearby' },
+  { url: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=700&q=82', alt: 'Artwork inside a local gallery' },
+  { url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=700&q=82', alt: 'Coffee from a neighborhood café' },
+  { url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=700&q=82', alt: 'A scenic city discovery' },
+  { url: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=700&q=82', alt: 'Colorful local event lights' },
+];
+
+const recentPlaces = [
+  'Riverside walk',
+  'Neighborhood café',
+  'Community garden',
+  'Independent gallery',
+  'Pocket park',
+  'Historic side street',
 ];
 
 const reviewLines = [
@@ -48,4 +78,19 @@ export function sampleReviewsForPlace(place: Pick<Place, 'id' | 'name'>): Sample
       visitNote: index === 0 ? 'Visited this week' : index === 1 ? 'Visited 2 weeks ago' : 'Visited last month',
     };
   });
+}
+
+export function sampleProfileDetails(username: string): SampleProfileDetails | null {
+  const profile = profiles.find((candidate) => candidate.username === username);
+  if (!profile) return null;
+  const seed = hash(username);
+  return {
+    ...profile,
+    recentComments: Array.from({ length: 3 }, (_, index) => ({
+      place: recentPlaces[(seed + index * 2) % recentPlaces.length]!,
+      text: reviewLines[(seed + index * 3) % reviewLines.length]!,
+      when: index === 0 ? '4 days ago' : index === 1 ? '2 weeks ago' : '1 month ago',
+    })),
+    photos: Array.from({ length: 3 }, (_, index) => profilePhotos[(seed + index * 2) % profilePhotos.length]!),
+  };
 }

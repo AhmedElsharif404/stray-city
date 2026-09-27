@@ -27,6 +27,7 @@ import { categoryMeta, placePhoto, placeSummary, timeAgo } from '../lib/format';
 import { sampleReviewsForPlace } from '../lib/sample-reviews';
 import { useStrayCity } from '../lib/stray-city-context';
 import { SampleBadge } from './SampleBadge';
+import { SampleProfileDialog } from './SampleProfileDialog';
 import { StrayCardDialog } from './StrayCardDialog';
 
 export function PlacePanel({ place, onClose }: { place: Place; onClose: () => void }) {
@@ -53,6 +54,7 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
   const [error, setError] = useState('');
   const [shareOpen, setShareOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [sampleProfileOpen, setSampleProfileOpen] = useState<string | null>(null);
   const placeEchoes = useMemo(
     () => echoes.filter((echo) => echo.placeId === place.id),
     [echoes, place.id],
@@ -276,18 +278,24 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
             {sampleReviews.map((review) => (
               <article key={review.id} className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <span
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-bold text-white"
+                  <button
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-bold text-white transition hover:scale-105 focus-visible:scale-105"
                     style={{ background: `linear-gradient(135deg, ${review.accent}, #18275C)` }}
-                    aria-hidden="true"
+                    onClick={() => setSampleProfileOpen(review.username)}
+                    aria-label={`View profile of ${review.displayName}`}
                   >
                     {review.initials}
-                  </span>
+                  </button>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-bold leading-tight">{review.displayName}</p>
-                        <p className="mt-0.5 text-xs text-ink/45">@{review.username}</p>
+                        <button
+                          className="text-left hover:text-blue"
+                          onClick={() => setSampleProfileOpen(review.username)}
+                        >
+                          <span className="block font-bold leading-tight">{review.displayName}</span>
+                          <span className="mt-0.5 block text-xs text-ink/45">@{review.username}</span>
+                        </button>
                       </div>
                       <div className="flex items-center gap-0.5 text-coral" aria-label={`${review.rating} out of 5 stars`}>
                         {Array.from({ length: 5 }, (_, star) => (
@@ -481,6 +489,9 @@ export function PlacePanel({ place, onClose }: { place: Place; onClose: () => vo
       </div>
 
       {shareOpen && <StrayCardDialog place={place} onClose={() => setShareOpen(false)} />}
+      {sampleProfileOpen && (
+        <SampleProfileDialog username={sampleProfileOpen} onClose={() => setSampleProfileOpen(null)} />
+      )}
       {inviteOpen && (
         <div
           className="modal-backdrop"
