@@ -3,9 +3,11 @@ import cron from 'node-cron';
 import { app } from './app.js';
 import { config, hasSupabaseAdmin } from './config.js';
 import { runAllEtl } from './etl/runner.js';
+import { startSpectrumAgent } from './spectrum-agent.js';
 
 app.listen(config.PORT, () => {
   console.log(`Stray City server listening on http://localhost:${config.PORT}`);
+  startSpectrumAgent();
 });
 
 if (config.ETL_CRON_ENABLED && hasSupabaseAdmin) {

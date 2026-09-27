@@ -25,6 +25,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
           String(data.get('password')),
           String(data.get('displayName')),
           String(data.get('username')),
+          String(data.get('phone')),
         );
       }
       if (!isDemoMode) onClose();
@@ -83,6 +84,21 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
               Email
               <input name="email" type="email" autoComplete="email" required />
             </label>
+            {mode === 'signup' && (
+              <label className="field-label">
+                Phone number
+                <input
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+1 212 555 0199"
+                  required
+                />
+                <span className="mt-1 block text-[11px] font-normal normal-case tracking-normal text-ink/45">
+                  Required to connect photos sent through iMessage. Never shown publicly.
+                </span>
+              </label>
+            )}
             <label className="field-label">
               Password
               <input

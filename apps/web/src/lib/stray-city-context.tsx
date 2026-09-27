@@ -47,6 +47,7 @@ interface CurrentProfile {
   role: 'member' | 'moderator' | 'admin';
   publicLeaderboard: boolean;
   isDemo: boolean;
+  avatarPath: string | null;
 }
 
 interface StrayCityContextValue {
@@ -98,6 +99,7 @@ interface StrayCityContextValue {
   sendStray: (recipientId: string, placeId: string, message: string) => Promise<void>;
   requestFriend: (username: string) => Promise<void>;
   setPublicLeaderboardOptIn: (enabled: boolean) => Promise<void>;
+  updateAvatar: (file: File) => Promise<void>;
   checkNearbyCrew: (coordinates: Coordinates) => Promise<void>;
   createStory: (
     placeId: string,
@@ -118,7 +120,13 @@ interface StrayCityContextValue {
     sidequestObjective: string;
   }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string, username: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    displayName: string,
+    username: string,
+    phone: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -209,6 +217,7 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
     role: 'admin',
     publicLeaderboard: false,
     isDemo: true,
+    avatarPath: 'https://i.pravatar.cc/160?img=68',
   });
   const [loading, setLoading] = useState(isSupabaseConfigured);
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -281,6 +290,7 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
         role: 'member',
         publicLeaderboard: false,
         isDemo: false,
+        avatarPath: null,
       });
       setFavorites(new Set());
       return;
@@ -313,6 +323,9 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
       ]);
       if (!active) return;
       if (userProfile) {
+        const avatarPath = userProfile.avatar_path
+          ? await authorizedMediaUrl(String(userProfile.avatar_path))
+          : null;
         setProfile({
           id: authUser.id,
           email: authUser.email ?? null,
@@ -321,6 +334,7 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
           role: userProfile.role as CurrentProfile['role'],
           publicLeaderboard: Boolean(userProfile.public_leaderboard),
           isDemo: false,
+          avatarPath,
         });
       }
       setFavorites(new Set((favoriteRows ?? []).map((row) => String(row.place_id))));
@@ -990,15 +1004,32 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
     notify('Welcome back.');
   };
 
-  const signUp = async (email: string, password: string, displayName: string, username: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    displayName: string,
+    username: string,
+    phone: string,
+  ) => {
     if (!supabase) {
       notify('Demo mode: connect Supabase to create a real account.', 'neutral');
       return;
     }
+    const digits = phone.replace(/\D/g, '');
+    const phoneE164 = phone.trim().startsWith('+')
+      ? `+${digits}`
+      : digits.length === 10
+        ? `+1${digits}`
+        : digits.length === 11 && digits.startsWith('1')
+          ? `+${digits}`
+          : '';
+    if (!/^\+[1-9][0-9]{7,14}$/.test(phoneE164)) {
+      throw new Error('Enter a valid phone number with country code.');
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, username } },
+      options: { data: { display_name: displayName, username, phone_e164: phoneE164 } },
     });
     if (error) throw error;
     notify('Account created. Check your email if confirmation is enabled.');
@@ -1008,6 +1039,29 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
     if (supabase) await supabase.auth.signOut();
     setAuthUser(null);
     notify('Signed out.');
+  };
+
+  const updateAvatar = async (file: File) => {
+    if (!supabase || !authUser) {
+      notify('Sign in to add a profile photo.', 'neutral');
+      return;
+    }
+    if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
+    if (file.size > 5 * 1024 * 1024) throw new Error('Profile photos must be 5 MB or smaller.');
+    const extension = file.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'jpg';
+    const avatarPath = `${authUser.id}/avatar-${Date.now()}.${extension}`;
+    const { error: uploadError } = await supabase.storage
+      .from('user-media')
+      .upload(avatarPath, file, { contentType: file.type, upsert: false });
+    if (uploadError) throw uploadError;
+    const { error: profileError } = await supabase
+      .from('users')
+      .update({ avatar_path: avatarPath })
+      .eq('id', authUser.id);
+    if (profileError) throw profileError;
+    const signedUrl = await authorizedMediaUrl(avatarPath);
+    setProfile((current) => ({ ...current, avatarPath: signedUrl }));
+    notify('Profile photo updated.');
   };
 
   const value = useMemo<StrayCityContextValue>(
@@ -1048,6 +1102,7 @@ export function StrayCityProvider({ children }: PropsWithChildren) {
       sendStray,
       requestFriend,
       setPublicLeaderboardOptIn,
+      updateAvatar,
       checkNearbyCrew,
       createStory,
       saveStoryAsEcho,

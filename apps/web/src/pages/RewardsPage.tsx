@@ -23,7 +23,7 @@ export function RewardsPage() {
       id: currentProfile.id,
       username: currentProfile.username,
       displayName: currentProfile.displayName,
-      avatarPath: null,
+      avatarPath: currentProfile.avatarPath,
       weeklyPoints: streetCred,
       isSample: currentProfile.isDemo,
     },

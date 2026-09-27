@@ -21,6 +21,9 @@ const StoriesPage = lazy(() =>
 const TrailsPage = lazy(() =>
   import('./pages/TrailsPage').then((module) => ({ default: module.TrailsPage })),
 );
+const AccountPage = lazy(() =>
+  import('./pages/AccountPage').then((module) => ({ default: module.AccountPage })),
+);
 
 export function App() {
   return (
@@ -39,6 +42,10 @@ export function App() {
           <Route path="/stories" element={<StoriesPage />} />
           <Route path="/rewards" element={<RewardsPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/profile" element={<AccountPage />} />
+          <Route path="/gallery" element={<AccountPage />} />
+          <Route path="/preferences" element={<AccountPage />} />
+          <Route path="/settings" element={<AccountPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

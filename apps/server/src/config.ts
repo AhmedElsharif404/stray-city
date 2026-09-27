@@ -18,6 +18,9 @@ const envSchema = z.object({
   MAPTILER_KEY: optionalSecret,
   CATALOG_DATA_PATH: optionalSecret,
   ETL_ADMIN_TOKEN: optionalSecret,
+  SPECTRUM_PROJECT_ID: optionalSecret,
+  SPECTRUM_PROJECT_SECRET: optionalSecret,
+  SPECTRUM_WEBHOOK_SECRET: optionalSecret,
   ETL_CRON_ENABLED: z
     .enum(['true', 'false'])
     .default('false')
@@ -28,3 +31,6 @@ const envSchema = z.object({
 export const config = envSchema.parse(process.env);
 
 export const hasSupabaseAdmin = Boolean(config.SUPABASE_URL && config.SUPABASE_SERVICE_ROLE_KEY);
+export const hasSpectrumAgent = Boolean(
+  config.SPECTRUM_PROJECT_ID && config.SPECTRUM_PROJECT_SECRET,
+);

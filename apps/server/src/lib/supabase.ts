@@ -10,7 +10,7 @@ export const supabaseAdmin = hasSupabaseAdmin
 
 export function requireSupabaseAdmin() {
   if (!supabaseAdmin) {
-    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for ETL writes.');
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for server writes.');
   }
   return supabaseAdmin;
 }

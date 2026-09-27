@@ -1,9 +1,15 @@
 import {
   Award,
+  ChevronDown,
+  Heart,
+  Images,
+  LogOut,
   Map,
   Menu,
   MessageCircleHeart,
   Route,
+  Settings,
+  SlidersHorizontal,
   UserRound,
   UsersRound,
   X,
@@ -23,9 +29,11 @@ const navItems = [
 ];
 
 export function AppShell({ children }: PropsWithChildren) {
-  const { currentProfile, isDemoMode, notice, dismissNotice, streetCred } = useStrayCity();
+  const { authUser, currentProfile, isDemoMode, notice, dismissNotice, signOut, streetCred } =
+    useStrayCity();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-cream text-ink">
@@ -72,14 +80,72 @@ export function AppShell({ children }: PropsWithChildren) {
             {isDemoMode && (
               <span className="hidden text-xs font-semibold text-ink/55 md:block">Demo mode</span>
             )}
-            <button
-              className="avatar-button"
-              onClick={() => setAuthOpen(true)}
-              aria-label="Open account"
-            >
-              <UserRound size={18} />
-              <span className="hidden sm:inline">{currentProfile.displayName}</span>
-            </button>
+            <div className="relative">
+              <button
+                className="avatar-button pl-1.5"
+                onClick={() => setAccountOpen((value) => !value)}
+                aria-label="Open account menu"
+                aria-expanded={accountOpen}
+              >
+                {currentProfile.avatarPath ? (
+                  <img
+                    src={currentProfile.avatarPath}
+                    alt=""
+                    className="h-8 w-8 rounded-full object-cover ring-2 ring-blue/15"
+                  />
+                ) : (
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-blue text-xs text-white">
+                    {currentProfile.displayName.slice(0, 1).toUpperCase() || <UserRound size={16} />}
+                  </span>
+                )}
+                <span className="hidden sm:inline">{currentProfile.displayName}</span>
+                <ChevronDown size={15} className="text-ink/45" />
+              </button>
+              {accountOpen && (
+                <div className="account-menu">
+                  <div className="border-b border-ink/10 px-4 py-3">
+                    <p className="font-bold">{currentProfile.displayName}</p>
+                    <p className="text-xs text-ink/50">@{currentProfile.username}</p>
+                  </div>
+                  <NavLink to="/profile" onClick={() => setAccountOpen(false)}>
+                    <UserRound size={17} /> Profile
+                  </NavLink>
+                  <NavLink to="/gallery" onClick={() => setAccountOpen(false)}>
+                    <Images size={17} /> My gallery
+                  </NavLink>
+                  <NavLink to="/preferences" onClick={() => setAccountOpen(false)}>
+                    <SlidersHorizontal size={17} /> Preferences
+                  </NavLink>
+                  <NavLink to="/settings" onClick={() => setAccountOpen(false)}>
+                    <Settings size={17} /> Settings
+                  </NavLink>
+                  <NavLink to="/rewards" onClick={() => setAccountOpen(false)}>
+                    <Heart size={17} /> Saved & rewards
+                  </NavLink>
+                  <div className="border-t border-ink/10 p-2">
+                    {authUser ? (
+                      <button
+                        onClick={() => {
+                          setAccountOpen(false);
+                          void signOut();
+                        }}
+                      >
+                        <LogOut size={17} /> Sign out
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setAccountOpen(false);
+                          setAuthOpen(true);
+                        }}
+                      >
+                        <UserRound size={17} /> Sign in or register
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             <button
               className="icon-button lg:hidden"
               onClick={() => setMobileOpen((value) => !value)}

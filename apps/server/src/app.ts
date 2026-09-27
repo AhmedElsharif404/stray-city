@@ -7,6 +7,7 @@ import { ZodError } from 'zod';
 import { config, hasSupabaseAdmin } from './config.js';
 import { HttpError } from './lib/http.js';
 import { etlRouter } from './routes/etl.js';
+import { userGalleryRouter } from './routes/user-gallery.js';
 
 export const app = express();
 
@@ -28,6 +29,7 @@ app.get('/health', (_request, response) => {
 });
 
 app.use('/api/etl', etlRouter);
+app.use('/api/user', userGalleryRouter);
 
 app.use((_request, _response, next) => {
   next(new HttpError(404, 'NOT_FOUND', 'Route not found.'));

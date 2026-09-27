@@ -70,6 +70,13 @@ select:focus-visible {
   .avatar-button {
     @apply flex h-10 items-center gap-2 rounded-full border border-ink/10 bg-white px-3 text-sm font-bold transition hover:border-ink/30;
   }
+  .account-menu {
+    @apply absolute right-0 top-[calc(100%+0.65rem)] z-[2100] w-64 overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-2xl;
+  }
+  .account-menu > a,
+  .account-menu button {
+    @apply flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-ink/70 transition hover:bg-blue/5 hover:text-ink;
+  }
   .glass-button {
     @apply inline-flex items-center gap-1 rounded-full border border-white/40 bg-white/85 px-4 py-2 text-sm font-bold text-ink shadow-sm backdrop-blur;
   }
