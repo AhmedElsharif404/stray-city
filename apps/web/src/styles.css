@@ -217,9 +217,9 @@ select:focus-visible {
 }
 .brand-logo-image {
   position: absolute;
-  top: -8px;
-  left: -15px;
-  width: 86px;
+  top: -22px;
+  left: -25px;
+  width: 120px;
   max-width: none;
 }
 
